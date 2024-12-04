@@ -93,7 +93,6 @@ def parse_category(content):
     return categories
 
 def parse_content(content):
-    # parse content to get items list of motherboards from gigabyte website with beautifulsoup
     soup = BeautifulSoup(content, "html.parser")
     items = soup.select(".pr-box")
     motherboards_items = []
