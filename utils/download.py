@@ -11,6 +11,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
 
+import urllib3
+
 def download_file_by_selenium(url):
 
     # get hash of url
@@ -60,7 +62,7 @@ def download_file_by_selenium(url):
     
     return read_file(f'./downloads/{hash}')
 
-def download_file(url, type='get', data_post=None, headers=None, sleep_time=0):
+def download_file(url, type='get', data_post=None, headers=None, sleep_time=0, verify=None):
     #get hash of url
     hash = hashlib.md5(url.encode()).hexdigest()
     if type == 'post':
@@ -70,20 +72,29 @@ def download_file(url, type='get', data_post=None, headers=None, sleep_time=0):
     if os.path.exists(f'./downloads/{hash}'):
         return read_file(f'./downloads/{hash}')
     
+    if headers is None:
+        headers = {
+            'User-Agent': get_random_user_agent()
+        }
+
+    if verify == False:
+        urllib3.disable_warnings()
+
     # create dir
     create_dir()
     
     # sleep for a few seconds
     if sleep_time > 0:
         time.sleep(sleep_time)
+
     # download file with a few attempts
     attempt = 0
     while attempt < 3:
         try:
             if type == 'get':
-                response = requests.get(url, headers=headers)
+                response = requests.get(url, headers=headers, verify=verify)
             elif type == 'post':
-                response = requests.post(url, data=data_post, headers=headers)
+                response = requests.post(url, data=data_post, headers=headers, verify=verify)
             else:
                 return None
             break
