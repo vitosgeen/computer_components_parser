@@ -12,6 +12,8 @@ import parsers.colorful
 import parsers.colorful.motherboard_list
 import parsers.evga
 import parsers.evga.motherboard_list
+import parsers.galax
+import parsers.galax.motherboard_list
 import parsers.gigabyte
 import parsers.gigabyte.motherboard_list
 import parsers.msi
@@ -47,6 +49,9 @@ def start_parser(manufacture, db):
         add_motherboards(motherboards, mbir)
     elif manufacture.lower() == models.manufacturer.Manufacturer().EVGA.lower():
         motherboards = parsers.evga.motherboard_list.start_parser_moterboard_list()
+        add_motherboards(motherboards, mbir)
+    elif manufacture.lower() == models.manufacturer.Manufacturer().GALAX.lower():
+        motherboards = parsers.galax.motherboard_list.start_parser_moterboard_list()
         add_motherboards(motherboards, mbir)
 
     else:
