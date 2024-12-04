@@ -5,7 +5,7 @@ from models.motherboard_item import MotherboardItem
 import utils
 import utils.download
 
-start_url = "https://www.evga.com/products/productlist.aspx?type=1"
+start_url = "https://www.evga.com/products/productlist.aspx?type=%page_index%"
 
 def start_parser_moterboard_list():
     motherboards_items = [] # MotherboardItem[]
