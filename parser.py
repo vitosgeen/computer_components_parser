@@ -8,6 +8,8 @@ import parsers.asus
 import parsers.asus.motherboard_list
 import parsers.biostar
 import parsers.biostar.motherboard_list
+import parsers.colorful
+import parsers.colorful.motherboard_list
 import parsers.gigabyte
 import parsers.gigabyte.motherboard_list
 import parsers.msi
@@ -37,6 +39,9 @@ def start_parser(manufacture, db):
         add_motherboards(motherboards, mbir)
     elif manufacture.lower() == models.manufacturer.Manufacturer().BIOSTAR.lower():
         motherboards = parsers.biostar.motherboard_list.start_parser_moterboard_list()
+        add_motherboards(motherboards, mbir)
+    elif manufacture.lower() == models.manufacturer.Manufacturer().COLORFUL.lower():
+        motherboards = parsers.colorful.motherboard_list.start_parser_moterboard_list()
         add_motherboards(motherboards, mbir)
 
     else:
