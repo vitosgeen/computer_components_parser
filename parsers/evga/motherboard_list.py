@@ -1,7 +1,7 @@
 from bs4 import BeautifulSoup
-from lxml import html
-import json
+
 from models.motherboard_item import MotherboardItem
+from models.manufacturer import Manufacturer
 import utils
 import utils.download
 
@@ -56,7 +56,7 @@ def parse_content(content):
             url = "https://www.evga.com" + url
         description = ""
         category = ""
-        manufacturer = "evga"
+        manufacturer = Manufacturer().EVGA
 
         # add to motherboards_items
         motherboards_items.append(MotherboardItem(0, orig_id, name, price, url, description, category, manufacturer))

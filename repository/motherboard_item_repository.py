@@ -34,3 +34,19 @@ class MotherboardItemRepository:
         if result is None:
             return None
         return MotherboardItem(result[0], result[1], result[2], result[3], result[4], result[5], result[6], result[7])
+    
+    def get_all_motherboards_by_manufacturer(self, manufacturer):
+        sql = 'SELECT * FROM motherboard_items WHERE manufacturer = \'?\''
+        sql = sql.replace('?', manufacturer)
+        print(sql)
+        rows = self.db.cursor.execute(sql)
+        # fetch all rows from the database table like a list of associative arrays
+        result = rows.fetchall()
+        print(result)
+        exit()
+        motherboards = []
+        for row in result:
+            row_dict = dict(row)
+            motherboards.append(MotherboardItem(row_dict['id'], row_dict['orig_id'], row_dict['title'], row_dict['price'], row_dict['link'], row_dict['description'], row_dict['category'], row_dict['manufacturer']))
+
+        return motherboards

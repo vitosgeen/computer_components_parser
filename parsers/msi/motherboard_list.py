@@ -1,6 +1,8 @@
 from lxml import html
 import json
+
 from models.motherboard_item import MotherboardItem
+from models.manufacturer import Manufacturer
 import utils
 import utils.download
 
@@ -49,7 +51,7 @@ def parse_content(content):
         url = "https://www.msi.com/Motherboard/" + item["link"]
         description = item["desc"]
         category = ""
-        manufacturer = "msi"
+        manufacturer = Manufacturer().MSI
         
         # add to motherboards_items
         motherboards_items.append(MotherboardItem(0, orig_id, name, price, url, description, category, manufacturer))

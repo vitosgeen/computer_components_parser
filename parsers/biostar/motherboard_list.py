@@ -1,11 +1,10 @@
 import os
 import random
-from time import sleep
 from bs4 import BeautifulSoup
 import certifi
-from lxml import html
-import json
+
 from models.motherboard_item import MotherboardItem
+from models.manufacturer import Manufacturer
 import utils
 import utils.download
 
@@ -51,31 +50,7 @@ def start_parser_moterboard_list():
             break
 
         # add to motherboards_items
-        motherboards_items += tmp_motherboards_items
-    
-    # page = 1
-    # while True:
-    #     # sleep for 3 - 8 seconds
-    #     rand_sleep = random.randint(1, 4)
-
-    #     # download content
-    #     print(f"Start scrape Page: {page}" + "url: " + start_url)
-    #     content = utils.download.download_file(start_url, type="post", data_post={"ClassKey": 2, "PageNumber": page, "PageSize": 12}, sleep_time=rand_sleep)
-    #     if content is None:
-    #         break
-
-    #     print(f"End scrape Page: {page}" + "url: " + start_url)
-
-    #     page += 1
-
-    #     # parse content
-    #     tmp_motherboards_items = parse_content(content)
-    #     if len(tmp_motherboards_items) == 0:
-    #         break
-
-    #     # add to motherboards_items
-    #     motherboards_items += tmp_motherboards_items
-        
+        motherboards_items += tmp_motherboards_items        
 
     return motherboards_items
 
@@ -109,7 +84,7 @@ def parse_content(content):
             url = "https://www.biostar.com.tw/app/en/mb/" + url
         description = ""
         category = ""
-        manufacturer = "biostar"
+        manufacturer = Manufacturer().BIOSTAR
 
         # add to motherboards_items
         motherboards_items.append(MotherboardItem(0, orig_id, name, price, url, description, category, manufacturer))

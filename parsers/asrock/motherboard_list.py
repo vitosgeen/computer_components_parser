@@ -2,7 +2,9 @@ from time import sleep
 from bs4 import BeautifulSoup
 from lxml import html
 from selenium.webdriver.common.by import By
+
 from models.motherboard_item import MotherboardItem
+from models.manufacturer import Manufacturer
 import utils
 import utils.download
 import utils.swebdriver
@@ -77,7 +79,7 @@ def parse_content(content):
         description = item.text
         description = description.replace("Add to compare", "")
         category = ""
-        manufacturer = "asrock"
+        manufacturer = Manufacturer().ASROCK
         
         # add to motherboards_items
         motherboards_items.append(MotherboardItem(0, orig_id, name, price, link, description, category, manufacturer))
@@ -96,7 +98,7 @@ def parse_content(content):
         description = item.text
         description = description.replace("Add to compare", "")
         category = ""
-        manufacturer = "asrock"
+        manufacturer = Manufacturer().ASROCK
         
         # add to motherboards_items
         motherboards_items.append(MotherboardItem(0, orig_id, name, price, link, description, category, manufacturer))

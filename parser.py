@@ -6,6 +6,7 @@ import parsers.asrock
 import parsers.asrock.motherboard_list
 import parsers.asus
 import parsers.asus.motherboard_list
+import parsers.asus.motherboard_page
 import parsers.biostar
 import parsers.biostar.motherboard_list
 import parsers.colorful
