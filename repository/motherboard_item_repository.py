@@ -38,7 +38,7 @@ class MotherboardItemRepository:
         return MotherboardItem(result_dict['id'], result_dict['orig_id'], result_dict['title'], result_dict['price'], result_dict['link'], result_dict['description'], result_dict['category'], result_dict['manufacturer'])
         
     
-    def get_all_motherboards_by_manufacturer(self, manufacturer):
+    def getAllMotherboardsByManufacturer(self, manufacturer):
         rows = self.db.cursor.execute('SELECT * FROM motherboard_items WHERE manufacturer = ?', (manufacturer,))
         result = rows.fetchall()
         motherboards = []
