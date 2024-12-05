@@ -26,24 +26,21 @@ class MotherboardItemRepository:
         result = row.fetchone()
         if result is None:
             return None
-        return MotherboardItem(result[0], result[1], result[2], result[3], result[4], result[5], result[6], result[7])
+        result_dict = dict(result)
+        return MotherboardItem(result_dict['id'], result_dict['orig_id'], result_dict['title'], result_dict['price'], result_dict['link'], result_dict['description'], result_dict['category'], result_dict['manufacturer'])
     
     def getByLink(self, link):
         row = self.db.cursor.execute('SELECT * FROM motherboard_items WHERE link = ?', (link,))
         result = row.fetchone()
         if result is None:
             return None
-        return MotherboardItem(result[0], result[1], result[2], result[3], result[4], result[5], result[6], result[7])
+        result_dict = dict(result)
+        return MotherboardItem(result_dict['id'], result_dict['orig_id'], result_dict['title'], result_dict['price'], result_dict['link'], result_dict['description'], result_dict['category'], result_dict['manufacturer'])
+        
     
     def get_all_motherboards_by_manufacturer(self, manufacturer):
-        sql = 'SELECT * FROM motherboard_items WHERE manufacturer = \'?\''
-        sql = sql.replace('?', manufacturer)
-        print(sql)
-        rows = self.db.cursor.execute(sql)
-        # fetch all rows from the database table like a list of associative arrays
+        rows = self.db.cursor.execute('SELECT * FROM motherboard_items WHERE manufacturer = ?', (manufacturer,))
         result = rows.fetchall()
-        print(result)
-        exit()
         motherboards = []
         for row in result:
             row_dict = dict(row)
