@@ -31,6 +31,7 @@ def start_parser(manufacture, db):
     if manufacture.lower() == models.manufacturer.Manufacturer().ASUS.lower():
         motherboards = parsers.asus.motherboard_list.start_parser_moterboard_list()
         add_motherboards(motherboards, mbir)
+        parsers.asus.motherboard_page.start_parser_motherboard_pages(mbir)
 
     elif manufacture.lower() == models.manufacturer.Manufacturer().MSI.lower():
         motherboards = parsers.msi.motherboard_list.start_parser_moterboard_list()
