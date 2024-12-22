@@ -2,6 +2,11 @@ class MotherboardOverview:
     TYPE_MODEL = "model"
     TYPE_DESCRIPTION = "description"
     TYPE_NAME = "name"
+    TYPE_IMAGE = "image"
+    TYPE_LINK_OVERVIEW = "link_overview"
+    TYPE_LINK_TECHNICAL_SPEC = "link_technical_spec"
+    TYPE_LINK_SUPPORT = "link_support"
+
     def __init__(self, id, mb_item_id, type, text, updated_at=None):
         self.id = id
         self.mb_item_id = mb_item_id
