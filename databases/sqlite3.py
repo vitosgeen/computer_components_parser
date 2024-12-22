@@ -26,6 +26,15 @@ class SQLite3:
                 manufacturer TEXT
             )
         ''')
+        self.cursor.execute('''
+            CREATE TABLE IF NOT EXISTS motherboard_overviews (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                mb_item_id INTEGER,
+                type TEXT,
+                text TEXT,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
         self.conn.commit()
 
     # close connection
