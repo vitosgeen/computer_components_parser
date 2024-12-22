@@ -1,8 +1,14 @@
+# activate virtual environment
+activate-venv:
+	@echo "Activating virtual environment"
+	source venv/bin/activate
+
 # parser manufacture
 run: 
 	@echo "Running the parser"
-	python main.py ${ARGS}
+	python main.py -m ${ARGS}
 
+# parser manufacture for all
 run-all:
 	@echo "Running the parser"
 	python main.py -m asus
