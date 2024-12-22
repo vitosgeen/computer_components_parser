@@ -180,7 +180,7 @@ def parse_motherboard_image(content, motherboard_item):
         "#sec-spec .section-content figure img",
         "#tuf-spec .image img",
         "#pageContent-spec figure img",
-        "picture img",
+        "div[class*=\"KvSummary__imageWrapper\"] picture img",
         "#hd #kv img[alt]:not([alt=\"\"],[src*=\"icon\"])",
         "div[class*=\"_ProductImage_\"] > img",
         "#sec-kv figure img.pd",
@@ -190,6 +190,7 @@ def parse_motherboard_image(content, motherboard_item):
         "div.hero img",
         "section#spec figure > img.lazyLoad[data-src]:not([data-src*=\"-m\"])",
         "#kv .pic img[alt]:not([alt=\"\"],[alt*=\"_\"])",
+        "section#sectionOverview span > img",
     ]
     soup = BeautifulSoup(content, "html.parser")
     motherboard_overview = []
