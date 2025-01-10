@@ -25,7 +25,7 @@ class SQLite3:
                 category TEXT,
                 manufacturer TEXT
             )
-        ''')
+            ''')
         self.cursor.execute('''
             CREATE TABLE IF NOT EXISTS motherboard_overviews (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -34,7 +34,15 @@ class SQLite3:
                 text TEXT,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
-        ''')
+            ''')
+        self.cursor.execute(''' CREATE TABLE IF NOT EXISTS motherboard_techspecs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                mb_item_id INTEGER,
+                type TEXT,
+                text TEXT,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+            ''')
         self.conn.commit()
 
     # close connection
