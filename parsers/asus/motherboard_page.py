@@ -5,13 +5,23 @@ from models.manufacturer import Manufacturer
 from models.motherboard_overview import MotherboardOverview
 import utils
 import utils.download
+import utils.utils
 
 def start_parser_motherboard_pages(mbir):
     # get all asus motherboard items from db
     motherboard_items = mbir.getAllMotherboardsByManufacturer(Manufacturer().ASUS)
+    motherboard_overviews_result = []
     for motherboard_item in motherboard_items:
-        start_parser_motherboard_page(motherboard_item)
-
+        # start parse asus motherboard page
+        motherboard_overviews = start_parser_motherboard_page(motherboard_item)
+        if motherboard_overviews is None:
+            continue
+        for motherboard_overview in motherboard_overviews:
+            motherboard_overview.mb_item_id = motherboard_item.id
+            motherboard_overviews_result.append(motherboard_overview)
+    
+    return motherboard_overviews_result
+        
 def start_parser_motherboard_page(motherboard_item):
 
     print("start_parser_motherboard_page: ", motherboard_item.link)
@@ -33,8 +43,7 @@ def start_parser_motherboard_page(motherboard_item):
     motherboard_overviews += parse_motherboard_description(content, motherboard_item)
     motherboard_overviews += parse_motherboard_image(content, motherboard_item)
 
-    for item in motherboard_overviews:
-        print("item: ", item.type, item.text)
+    return motherboard_overviews
 
 def parse_motherboard_overview_page(motherboard):
     pass
@@ -70,8 +79,13 @@ def parse_motherboard_overview_links(content, motherboard_item):
                 type_item = MotherboardOverview.TYPE_LINK_SUPPORT
             else:
                 continue
-
-            motherboard_overview.append(MotherboardOverview(0, motherboard_item.id, type_item, item.get("href")))
+            
+            href = item.get("href")
+            if href is None:
+                continue
+            if href.find("http") == -1:
+                href = utils.utils.get_domain(motherboard_item.link) + href
+            motherboard_overview.append(MotherboardOverview(0, motherboard_item.id, type_item, href))
         
 
 
