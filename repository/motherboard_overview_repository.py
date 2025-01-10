@@ -44,3 +44,31 @@ class MotherboardOverviewRepository:
             overviews.append(MotherboardOverview(row_dict['id'], row_dict['mb_item_id'], row_dict['type'], row_dict['text'], row_dict['updated_at']))
 
         return overviews
+    
+    def getOverviewsByMbItemIdTypeText(self, mb_item_id, type, text):
+        row = self.db.cursor.execute('SELECT * FROM motherboard_overviews WHERE mb_item_id = ? AND type = ? AND text = ?', (mb_item_id, type, text))
+        result = row.fetchone()
+        if result is None:
+            return None
+        result_dict = dict(result)
+        return MotherboardOverview(result_dict['id'], result_dict['mb_item_id'], result_dict['type'], result_dict['text'], result_dict['updated_at'])
+    
+    def getOverviewsByMbItemIdType(self, mb_item_id, type):
+        rows = self.db.cursor.execute('SELECT * FROM motherboard_overviews WHERE mb_item_id = ? AND type = ?', (mb_item_id, type))
+        result = rows.fetchall()
+        overviews = []
+        for row in result:
+            row_dict = dict(row)
+            overviews.append(MotherboardOverview(row_dict['id'], row_dict['mb_item_id'], row_dict['type'], row_dict['text'], row_dict['updated_at']))
+
+        return overviews
+    
+    def getAllByType(self, type, manufacture):
+        rows = self.db.cursor.execute('SELECT * FROM motherboard_overviews WHERE type = ? AND manufacture = ?', (type, manufacture))
+        result = rows.fetchall()
+        overviews = []
+        for row in result:
+            row_dict = dict(row)
+            overviews.append(MotherboardOverview(row_dict['id'], row_dict['mb_item_id'], row_dict['type'], row_dict['text'], row_dict['updated_at']))
+
+        return overviews
