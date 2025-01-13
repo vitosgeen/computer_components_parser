@@ -84,7 +84,7 @@ def parse_motherboard_overview_links(content, motherboard_item):
             if href is None:
                 continue
             if href.find("http") == -1:
-                href = utils.utils.get_domain(motherboard_item.link) + href
+                href = utils.utils.get_origin(motherboard_item.link) + href
             motherboard_overview.append(MotherboardOverview(0, motherboard_item.id, type_item, href))
         
 
