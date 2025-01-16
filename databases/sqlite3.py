@@ -43,6 +43,14 @@ class SQLite3:
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
             ''')
+        self.cursor.execute(''' CREATE TABLE IF NOT EXISTS motherboard_supports (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                mb_item_id INTEGER,
+                type TEXT,
+                data TEXT,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+            ''')
         self.conn.commit()
 
     # close connection
