@@ -23,16 +23,18 @@ def start_parser_motherboard_techspec(mbir, mbor):
             if motherboard_techspecs is None:
                 continue
             for motherboard_techspec in motherboard_techspecs:
-                # motherboard_techspec.mb_item_id = motherboard_item.id
-                # motherboard_techspecs_result.append(motherboard_techspec)
-
-                print(motherboard_techspec.to_dict())
+                motherboard_techspec.mb_item_id = motherboard_item.id
+                motherboard_techspecs_result.append(motherboard_techspec)
 
     return motherboard_techspecs_result
 
 def start_parser_motherboard_techspec_page(motherboard_overview):
     if motherboard_overview.type != MotherboardOverview.TYPE_LINK_TECHNICAL_SPEC:
         print("start_parser_motherboard_techspec_page: not a technical spec link")
+        return
+    # if motherboard_overview.text doesn't have /spec/ in it, return
+    if "/spec/" not in motherboard_overview.text:
+        print("start_parser_motherboard_techspec_page: not a technical spec link", motherboard_overview.text)
         return
     
     print("start_parser_motherboard_techspec_page: ", motherboard_overview.text)
@@ -59,6 +61,11 @@ def parse_motherboard_techspec_page(content, motherboard_overview):
     motherboard_techspecs.append(motherboard_techspec)
 
     motherboard_techspecs_rows = parse_motherboard_techspec_rows(content, motherboard_overview)
+    # if motherboard_techspecs_rows length is 0, return
+    if len(motherboard_techspecs_rows) == 0:
+        print("Error: asus motherboard techspec rows not found")
+        print("motherboard_techspecs_rows: ", motherboard_techspecs_rows)
+        exit()
     motherboard_techspecs += motherboard_techspecs_rows
     
     print(motherboard_techspecs)
@@ -70,29 +77,27 @@ def parse_motherboard_techspec_rows(content, motherboard_overview):
         '#productTableBody > div > div',
         '.specContent > div > div > div'
     ]
+    motherboard_techspecs = []
     for index, selector in enumerate(selectors):
         items = soup.select(selector)
         if len(items) == 0:
             print("Error: asus motherboard techspec rows not found (selector: %s)" % selector)
-            exit()
+            # exit()
             continue
         if index == 0:
-            motherboard_techspecs = parse_motherboard_techspec_rows_1(items, motherboard_overview)
+            return parse_motherboard_techspec_rows_1(items, motherboard_overview)
         elif index == 1:
-            motherboard_techspecs = parse_motherboard_techspec_rows_2(items, motherboard_overview)
+            return parse_motherboard_techspec_rows_2(items, motherboard_overview)
         
     return motherboard_techspecs
 
 def parse_motherboard_techspec_rows_2(items, motherboard_overview):
+    print("parse_motherboard_techspec_rows_2")
     motherboard_techspecs = []
     for item in items:
         mti = parse_motherboard_techspec_type_image_2(item, motherboard_overview)
         if mti is not None:
             motherboard_techspecs.append(mti)
-            continue
-        mtn = parse_motherboard_techspec_type_name_2(item, motherboard_overview)
-        if mtn is not None:
-            motherboard_techspecs.append(mtn)
             continue
 
         mts = parse_motherboard_techspec_type_row_2(item, motherboard_overview)
@@ -100,6 +105,7 @@ def parse_motherboard_techspec_rows_2(items, motherboard_overview):
             motherboard_techspecs += mts
             continue
 
+    return motherboard_techspecs
 
 
 def parse_motherboard_techspec_rows_1(items, motherboard_overview):
