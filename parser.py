@@ -8,6 +8,7 @@ import parsers.asrock.motherboard_list
 import parsers.asus
 import parsers.asus.motherboard_list
 import parsers.asus.motherboard_page
+import parsers.asus.motherboard_support
 import parsers.asus.motherboard_techspec
 import parsers.biostar
 import parsers.biostar.motherboard_list
@@ -25,6 +26,7 @@ import repository
 import repository.motherboard_item_repository
 import models.manufacturer
 import repository.motherboard_overview_repository
+import repository.motherboard_support_repository
 import repository.motherboard_techspec_repository
 
 
@@ -35,17 +37,22 @@ def start_parser(manufacture, db):
     mbor = repository.motherboard_overview_repository.MotherboardOverviewRepository(db)
     # motherboard techspec repository
     mbtr = repository.motherboard_techspec_repository.MotherboardTechSpecRepository(db)
+    # motherboard support repository
+    mbsr = repository.motherboard_support_repository.MotherboardSupportRepository(db)
     # start parser based on manufacture type with switch case
     if manufacture.lower() == models.manufacturer.Manufacturer().ASUS.lower():
         # motherboards = parsers.asus.motherboard_list.start_parser_moterboard_list()
         # add_motherboards(motherboards, mbir)
         # motherboards_overviews = parsers.asus.motherboard_page.start_parser_motherboard_pages(mbir)
         # add_motherboards_overviews(motherboards_overviews, mbor)
-        motherboards_techspecs = parsers.asus.motherboard_techspec.start_parser_motherboard_techspec(mbir, mbor)
+        # motherboards_techspecs = parsers.asus.motherboard_techspec.start_parser_motherboard_techspec(mbir, mbor)
 
         # motherboards_overviews_techspec_links = get_motherboard_overviews_by_type(mbor, manufacture.lower(), models.motherboard_overview.MotherboardOverview.TYPE_LINK_TECHNICAL_SPEC)
         # motherboards_techspecs = parsers.asus.motherboard_techspec.start_parser_motherboard_techspec(mbir, mbor)
         # add_motherboards_techspecs(motherboards_techspecs, mbtr)
+
+        motherboards_support = parsers.asus.motherboard_support.start_parser_motherboard_support(mbir, mbor, mbtr, mbsr)
+        # add_motherboards_support(motherboards_support, mbsr)
 
 
 
@@ -97,6 +104,13 @@ def add_motherboards_techspecs(motherboards_techspecs, mbtr):
         motherboard_techspec_loaded = mbtr.getTechSpecsByMbItemIdTypeText(motherboard_techspec.mb_item_id, motherboard_techspec.type, motherboard_techspec.text)
         if motherboard_techspec_loaded is None:
             mbtr.add(motherboard_techspec)
+
+def add_motherboards_support(motherboards_support, mbsr):
+    for motherboard_support in motherboards_support:
+        # check if motherboard support exists in db by mb_item_id and type
+        motherboard_support_loaded = mbsr.getSupportsByMbItemIdTypeData(motherboard_support.mb_item_id, motherboard_support.type, motherboard_support.data)
+        if motherboard_support_loaded is None:
+            mbsr.add(motherboard_support)
 
 def get_motherboard_overviews_by_type(mbor, manufacture, type):
     return mbor.getAllByType(type, manufacture)
