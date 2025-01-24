@@ -148,3 +148,11 @@ def collection_of_user_agents():
         'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.81 Safari/537.3',
         'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3',
     ]
+
+def save_content_to_file(content, file):
+    try:
+        with open(file, 'w') as f:
+            f.write(content)
+    except Exception as e:
+        print(e)
+        return None

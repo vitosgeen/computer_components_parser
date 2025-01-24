@@ -73,3 +73,10 @@ class MotherboardSupportRepository:
             supports.append(MotherboardSupport(row_dict['id'], row_dict['mb_item_id'], row_dict['type'], row_dict['data'], row_dict['updated_at']))
 
         return supports
+    
+    def add_motherboards_support(self, motherboards_support):
+        for motherboard_support in motherboards_support:
+            # check if motherboard support exists in db by mb_item_id and type
+            motherboard_support_loaded = self.getSupportsByMbItemIdTypeData(motherboard_support.mb_item_id, motherboard_support.type, motherboard_support.data)
+            if motherboard_support_loaded is None:
+                self.add(motherboard_support)
