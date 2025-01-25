@@ -10,14 +10,25 @@ from models.motherboard_overview import MotherboardOverview
 from models.motherboard_techspec import MotherboardTechSpec
 from models.motherboard_support import MotherboardSupport
 import utils
+import utils.cache
 import utils.download
 import utils.swebdriver
+
+# const prefix for cache key
+CACHE_PREFIX = "support_motherboard_item_"
 
 def start_parser_motherboard_support(mbir, mbor, mbtr, mbsr):
     # get all asus motherboard items from db
     motherboard_items = mbir.getAllMotherboardsByManufacturer(Manufacturer().ASUS)
     motherboard_support_result = []
     for motherboard_item in motherboard_items:
+        key_motherboard_support = CACHE_PREFIX + str(motherboard_item.id)
+        # check if cache exists
+        json_cache = utils.cache.get_json_cache(key_motherboard_support)
+        if json_cache is not None:
+            print("cache exists: ", key_motherboard_support)
+            continue
+        
         # get motherboard_overview by mb_item_id and type link_support
         motherboard_overviews = mbor.getOverviewsByMbItemIdType(motherboard_item.id, MotherboardOverview.TYPE_LINK_SUPPORT)
         if motherboard_overviews is None:
@@ -34,6 +45,8 @@ def start_parser_motherboard_support(mbir, mbor, mbtr, mbsr):
                 motherboard_support_result.append(motherboard_support_row)
 
             mbsr.add_motherboards_support(motherboard_support)
+            # set json cache
+            utils.cache.set_json_cache(key_motherboard_support, motherboard_support)
     return motherboard_support_result
 
 def start_parser_motherboard_support_page(motherboard_overview):
