@@ -41,18 +41,18 @@ def start_parser(manufacture, db):
     mbsr = repository.motherboard_support_repository.MotherboardSupportRepository(db)
     # start parser based on manufacture type with switch case
     if manufacture.lower() == models.manufacturer.Manufacturer().ASUS.lower():
-        # motherboards = parsers.asus.motherboard_list.start_parser_moterboard_list()
-        # add_motherboards(motherboards, mbir)
-        # motherboards_overviews = parsers.asus.motherboard_page.start_parser_motherboard_pages(mbir)
-        # add_motherboards_overviews(motherboards_overviews, mbor)
-        # motherboards_techspecs = parsers.asus.motherboard_techspec.start_parser_motherboard_techspec(mbir, mbor)
+        motherboards = parsers.asus.motherboard_list.start_parser_moterboard_list()
+        add_motherboards(motherboards, mbir)
+        motherboards_overviews = parsers.asus.motherboard_page.start_parser_motherboard_pages(mbir)
+        add_motherboards_overviews(motherboards_overviews, mbor)
+        motherboards_techspecs = parsers.asus.motherboard_techspec.start_parser_motherboard_techspec(mbir, mbor)
 
-        # motherboards_overviews_techspec_links = get_motherboard_overviews_by_type(mbor, manufacture.lower(), models.motherboard_overview.MotherboardOverview.TYPE_LINK_TECHNICAL_SPEC)
-        # motherboards_techspecs = parsers.asus.motherboard_techspec.start_parser_motherboard_techspec(mbir, mbor)
-        # add_motherboards_techspecs(motherboards_techspecs, mbtr)
+        motherboards_overviews_techspec_links = get_motherboard_overviews_by_type(mbor, manufacture.lower(), models.motherboard_overview.MotherboardOverview.TYPE_LINK_TECHNICAL_SPEC)
+        motherboards_techspecs = parsers.asus.motherboard_techspec.start_parser_motherboard_techspec(mbir, mbor)
+        add_motherboards_techspecs(motherboards_techspecs, mbtr)
 
         motherboards_support = parsers.asus.motherboard_support.start_parser_motherboard_support(mbir, mbor, mbtr, mbsr)
-        # add_motherboards_support(motherboards_support, mbsr)
+        add_motherboards_support(motherboards_support, mbsr)
 
 
 
