@@ -99,12 +99,62 @@ def parse_motherboard_support_page_rog(motherboard_overview):
     driver.get(link)
 
     menu_elements = driver.find_elements(By.CSS_SELECTOR, '[class^="Tabs__tabs"] ul[role="tablist"] li')
+    if len(menu_elements) == 0:
+        tab_title_element = driver.find_element(By.CSS_SELECTOR, 'h2[class^="ProductSupportContent__tabTitle__"]')
+        print("tab_title_element: ", tab_title_element.text.lower())
+        
+        selector_table_header = '[class^="ProductSupportRightArea__"] table thead tr th'
+        table_header_elements = driver.find_elements(By.CSS_SELECTOR, selector_table_header)
+        table_header = []
+        for table_header_element in table_header_elements:
+            # clean the text and trim it
+            header_text = table_header_element.text.replace("\n", " ")
+            header_text = header_text.strip()
+            table_header.append(header_text)
+        selector_table_body = '[class^="ProductSupportRightArea__"] table tbody tr'
+        table_body_rows = driver.find_elements(By.CSS_SELECTOR, selector_table_body)
+        data_rows = []
+        for table_body_row in table_body_rows:
+            data_cells = {}
+            table_body_columns = table_body_row.find_elements(By.CSS_SELECTOR, 'td')
+            for i in range(len(table_body_columns)):
+                table_body_column_text = table_body_columns[i].text.replace(" GO", "")
+                data_cells[table_header[i]] = table_body_column_text
+
+            data_rows.append(data_cells)
+            
+        if MotherboardSupport.TYPE_MEMORY in tab_title_element.text.lower():
+            selector_rows = '[class^="ProductSupportVersionFile__productSupportVersionFileBox"]'
+            element_rows = driver.find_elements(By.CSS_SELECTOR, selector_rows)
+            for i in range(len(element_rows)):
+                element_row = element_rows[i]
+                release_date = element_row.find_element(By.CSS_SELECTOR, '[class^="ProductSupportVersionFile__releaseDate"]').text
+                file_title = element_row.find_element(By.CSS_SELECTOR, '[class^="ProductSupportVersionFile__boxContentTitle"]').text
+                file_url = element_row.find_element(By.CSS_SELECTOR, '[class^="ProductSupportVersionFile__boxRight"] a').get_attribute("href")
+                data_cells = {}
+                data_cells["Release Date"] = release_date
+                data_cells["File Title"] = file_title
+                data_cells["File URL"] = file_url
+                data_rows.append(data_cells)
+    
+        if MotherboardSupport.TYPE_CPU in tab_title_element.text.lower():
+            motherboard_supports += make_motherboard_support_from_data_rows(data_rows, MotherboardSupport.TYPE_CPU, motherboard_overview)
+        elif MotherboardSupport.TYPE_MEMORY in tab_title_element.text.lower():
+            motherboard_supports += make_motherboard_support_from_data_rows(data_rows, MotherboardSupport.TYPE_MEMORY, motherboard_overview)
+        elif MotherboardSupport.TYPE_DEVICE in tab_title_element.text.lower():
+            motherboard_supports += make_motherboard_support_from_data_rows(data_rows, MotherboardSupport.TYPE_DEVICE, motherboard_overview)
+        driver.quit()
+        return motherboard_supports
+    menu_element_count = 0;
     for menu_element in menu_elements:
+        if menu_element.text == "" or menu_element.text is None or menu_element is None:
+            continue
         print("menu_element: ", menu_element.text.lower())
         # retrieve the content of the tab and check if it contains "cpu" or "Memory"
         if "cpu" in menu_element.text.lower():
             tab_index = menu_element.get_attribute("tabindex")
-            execute_script_str = "document.querySelector('ul[role=\"tablist\"] li[tabindex=\"" + tab_index + "\"]').click()"
+            execute_script_str = "document.querySelectorAll('ul[role=\"tablist\"] li[tabindex]')[" + str(menu_element_count) + "].click()"
+            menu_element_count += 1
             print("execute_script_str: ", execute_script_str)
             driver.execute_script(execute_script_str)
             sleep(10)
@@ -191,8 +241,9 @@ def parse_motherboard_support_page_rog(motherboard_overview):
                         motherboard_supports += make_motherboard_support_from_data_rows(data_rows, MotherboardSupport.TYPE_MEMORY, motherboard_overview)
                     elif MotherboardSupport.TYPE_DEVICE in sub_menu_element_text:
                         motherboard_supports += make_motherboard_support_from_data_rows(data_rows, MotherboardSupport.TYPE_DEVICE, motherboard_overview)
-
-
+        break
+    
+    driver.quit()
     return motherboard_supports
 
 
