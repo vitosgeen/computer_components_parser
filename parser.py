@@ -5,6 +5,7 @@ import models.motherboard_overview
 import parsers
 import parsers.asrock
 import parsers.asrock.motherboard_list
+import parsers.asrock.motherboard_page
 import parsers.asus
 import parsers.asus.motherboard_list
 import parsers.asus.motherboard_page
@@ -64,8 +65,10 @@ def start_parser(manufacture, db):
         motherboards = parsers.gigabyte.motherboard_list.start_parser_moterboard_list()
         add_motherboards(motherboards, mbir)
     elif manufacture.lower() == models.manufacturer.Manufacturer().ASROCK.lower():
-        motherboards = parsers.asrock.motherboard_list.start_parser_moterboard_list()
-        add_motherboards(motherboards, mbir)
+        # motherboards = parsers.asrock.motherboard_list.start_parser_moterboard_list()
+        # add_motherboards(motherboards, mbir)
+        motherboards_overviews = parsers.asrock.motherboard_page.start_parser_motherboard_pages(mbir)   
+        add_motherboards_overviews(motherboards_overviews, mbor)
     elif manufacture.lower() == models.manufacturer.Manufacturer().BIOSTAR.lower():
         motherboards = parsers.biostar.motherboard_list.start_parser_moterboard_list()
         add_motherboards(motherboards, mbir)
