@@ -17,7 +17,15 @@ def start_parser_motherboard_techspec(mbir, mbor):
         if motherboard_overviews is None:
             continue
 
+        it_was = False
         for motherboard_overview in motherboard_overviews:
+            # it's for speed up parsing and testing and debugging and development only.
+            # remove this line in production
+            if motherboard_overview.text == "https://www.asrock.com/mb/Intel/Z890%20Taichi%20AQUA/Specification.asp#Specification":
+                it_was = True
+            if not it_was:
+                continue
+            # remove this line in production
             # start parse asus motherboard techspec page
             motherboard_techspecs = start_parser_motherboard_techspec_page(motherboard_overview)
             if motherboard_techspecs is None:
