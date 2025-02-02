@@ -22,6 +22,8 @@ class MotherboardTechSpec:
     TYPE_MANAGEABILITY = "manageability"
     TYPE_FORM_FACTOR = "form_factor"
     TYPE_NOTE = "note"
+    TYPE_SOFTWARE = "software"
+    TYPE_OTHER = "other"
 
     # fields for MotherboardTechSpec
     def __init__(self, id, mb_item_id, type, text, updated_at=None):
@@ -54,6 +56,7 @@ class MotherboardTechSpec:
         return {
             MotherboardTechSpec.TYPE_IMAGE: "Image",
             MotherboardTechSpec.TYPE_MODEL: "Model",
+            MotherboardTechSpec.TYPE_SOFTWARE: "Software",
             MotherboardTechSpec.TYPE_CPU: "CPU",
             MotherboardTechSpec.TYPE_CPU_SOCKET: "CPU Socket",
             MotherboardTechSpec.TYPE_CHIPSET: "Chipset",
