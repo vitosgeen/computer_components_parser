@@ -4,6 +4,8 @@ from time import sleep
 from bs4 import BeautifulSoup
 from lxml import html
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 from models.manufacturer import Manufacturer
 from models.motherboard_overview import MotherboardOverview
@@ -21,7 +23,17 @@ def start_parser_motherboard_support(mbir, mbor, mbtr, mbsr):
     # get all asrock motherboard items from db
     motherboard_items = mbir.getAllMotherboardsByManufacturer(Manufacturer().ASROCK)
     motherboard_support_result = []
+    it_was = False
     for motherboard_item in motherboard_items:
+        # it's for speed up parsing and testing and debugging and development only.
+        # remove this line in production
+        print("motherboard_item.link: ", motherboard_item.link)
+        if motherboard_item.link == "https://www.asrock.com/mb/AMD/B650E Taichi Lite/index.asp":
+            it_was = True
+        if not it_was:
+            continue
+        # remove this line in production
+        # start parse asus motherboard page
         key_motherboard_support = CACHE_PREFIX + str(motherboard_item.id)
         # check if cache exists
         json_cache = utils.cache.get_json_cache(key_motherboard_support)
@@ -74,12 +86,25 @@ def parse_motherboard_support_page(motherboard_overview):
 
     menu_elements = driver.find_elements(By.CSS_SELECTOR, '#sSupport input.Buttons')
     for menu_element in menu_elements:
-        menu_element_text = menu_element.get_attribute("value")
-        print("menu_element: ", menu_element_text.lower())
+        print("menu_element type of variable: ", type(menu_element))
+        if menu_element is None:
+            continue
+        
+        try:
+            menu_element_text = menu_element.get_attribute("value")
+            print("menu_element: ", menu_element_text.lower())
+        except:
+            print("menu_element: None || Error")
+            continue
 
         # retrieve the content of the tab and check if it contains "cpu" or "Memory"
         if "cpu" in menu_element_text.lower():
-            menu_element.click()
+            # get value of menu_element
+            menu_element_value = menu_element.get_attribute("value")
+            menu_element_script = 'document.querySelector("#sSupport input[value=\\"' + menu_element_value + '\\"]").click()'
+            print("menu_element_script: ", menu_element_script)
+            driver.execute_script(menu_element_script)
+
             sleep(10)
 
             selector_table_header = 'div#CPU.Support table thead tr th'
@@ -102,15 +127,71 @@ def parse_motherboard_support_page(motherboard_overview):
 
                 data_rows.append(data_cells)
         elif "memory" in menu_element_text.lower():
-            menu_element.click()
+            # get value of menu_element
+            menu_element_value = menu_element.get_attribute("value")
+            menu_element_script = 'document.querySelector("#sSupport input[value=\\"' + menu_element_value + '\\"]").click()'
+            print("menu_element_script: ", menu_element_script)
+            driver.execute_script(menu_element_script)
             sleep(10)
             # if page has #SelectMemory dropdown, select the each option and get the data
             selector_select_memory = 'select#SelectMemory option'
-            select_memory_elements = driver.find_elements(By.CSS_SELECTOR, selector_select_memory)
+            # select_memory_elements = driver.find_elements(By.CSS_SELECTOR, selector_select_memory)
+            try :
+                select_memory_elements = WebDriverWait(driver, 10).until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, selector_select_memory)))
+            except:
+                print("select_memory_elements: None")
+                processor_memory_selector = 'div#Memory h3'
+                processor_memory_element = driver.find_element(By.CSS_SELECTOR, processor_memory_selector)
+                processor_memory_text = processor_memory_element.text
+                print("processor_memory_text: ", processor_memory_text)
+
+                selector_table_header = 'div#Memory table thead tr th'
+                table_header_elements = driver.find_elements(By.CSS_SELECTOR, selector_table_header)
+                table_header = []
+                for table_header_element in table_header_elements:
+                    # table_header_element has label , so need value of label
+                    thead_element_html = table_header_element.get_attribute("outerHTML")
+                    label_element = None
+                    if "label" in thead_element_html:
+                        label_element = table_header_element.find_element(By.CSS_SELECTOR, 'label')
+                    if label_element is not None:
+                        header_text = label_element.text.replace("\n", " ")
+                    else:
+                        header_text = table_header_element.text.replace("\n", " ")
+
+                    # clean the text and trim it
+                    header_text = header_text.strip()
+                    table_header.append(header_text)
+                    
+                selector_table_body = 'div#Memory.Support table tbody tr'
+                table_body_rows = driver.find_elements(By.CSS_SELECTOR, selector_table_body)
+                data_rows = []
+                for table_body_row in table_body_rows:
+                    data_cells = {}
+                    table_body_columns = table_body_row.find_elements(By.CSS_SELECTOR, 'td')
+                    if len(table_body_columns) == 0:
+                        continue
+                    # print("table_body_columns: ", len(table_body_columns))
+                    # print("table_header: ", len(table_header))
+                    for i in range(len(table_body_columns)):
+                        # if table_header[i] doesn't exist set it to empty string
+                        if i >= len(table_header):
+                            table_header.append("")
+                        data_cells[table_header[i]] = table_body_columns[i].text
+
+                    data_cells["notice"] = processor_memory_text
+                    data_rows.append(data_cells)
+                continue
+            
             # order the select_memory_elements reverse
             select_memory_elements.reverse()
             for select_memory_element in select_memory_elements:
-                if select_memory_element.get_attribute("value") is None:
+                if select_memory_element is None:
+                    continue
+                # try to catch exception if select_memory_element.get_attribute("value") is None
+                try:
+                    select_memory_element_value = select_memory_element.get_attribute("value")
+                except:
                     continue
                 select_memory_element.click()
                 sleep(10)
@@ -145,14 +226,24 @@ def parse_motherboard_support_page(motherboard_overview):
                     table_body_columns = table_body_row.find_elements(By.CSS_SELECTOR, 'td')
                     if len(table_body_columns) == 0:
                         continue
+                    # print("table_body_columns: ", len(table_body_columns))
+                    # print("table_header: ", len(table_header))
                     for i in range(len(table_body_columns)):
+                        # if table_header[i] doesn't exist set it to empty string
+                        if i >= len(table_header):
+                            table_header.append("")
                         data_cells[table_header[i]] = table_body_columns[i].text
 
                     data_cells["notice"] = processor_memory_text
                     data_rows.append(data_cells)
                         
         elif "storage" in menu_element_text.lower():
-            menu_element.click()
+            # get value of menu_element
+            menu_element_value = menu_element.get_attribute("value")
+            menu_element_script = 'document.querySelector("#sSupport input[value=\\"' + menu_element_value + '\\"]").click()'
+            print("menu_element_script: ", menu_element_script)
+            driver.execute_script(menu_element_script)
+            # menu_element.click()
             sleep(10)
 
             selector_table_header = 'div#Storage.Support table thead tr th'
@@ -188,7 +279,6 @@ def parse_motherboard_support_page(motherboard_overview):
 def make_motherboard_support_from_data_rows(data_rows, type, motherboard_overview):
     motherboard_supports = []
     for data_row in data_rows:
-        print("data_row: ", data_row)
         motherboard_support = MotherboardSupport(
             id=None,
             mb_item_id=motherboard_overview.mb_item_id,
