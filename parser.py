@@ -44,18 +44,18 @@ def start_parser(manufacture, db):
     mbsr = repository.motherboard_support_repository.MotherboardSupportRepository(db)
     # start parser based on manufacture type with switch case
     if manufacture.lower() == models.manufacturer.Manufacturer().ASUS.lower():
+        # start asus parser for motherboards list
         motherboards = parsers.asus.motherboard_list.start_parser_moterboard_list()
         add_motherboards(motherboards, mbir)
+        # start asus parser for motherboards overview pages 
         motherboards_overviews = parsers.asus.motherboard_page.start_parser_motherboard_pages(mbir)
         add_motherboards_overviews(motherboards_overviews, mbor)
-        
+        # start asus parser for motherboards techspec pages 
         motherboards_techspecs = parsers.asus.motherboard_techspec.start_parser_motherboard_techspec(mbir, mbor)
         add_motherboards_techspecs(motherboards_techspecs, mbtr)
-
+        # start asus parser for motherboards support pages
         motherboards_support = parsers.asus.motherboard_support.start_parser_motherboard_support(mbir, mbor, mbtr, mbsr)
         add_motherboards_support(motherboards_support, mbsr)
-
-
 
     elif manufacture.lower() == models.manufacturer.Manufacturer().MSI.lower():
         motherboards = parsers.msi.motherboard_list.start_parser_moterboard_list()
@@ -65,14 +65,16 @@ def start_parser(manufacture, db):
         motherboards = parsers.gigabyte.motherboard_list.start_parser_moterboard_list()
         add_motherboards(motherboards, mbir)
     elif manufacture.lower() == models.manufacturer.Manufacturer().ASROCK.lower():
+        # start asrock parser for motherboards list
         motherboards = parsers.asrock.motherboard_list.start_parser_moterboard_list()
         add_motherboards(motherboards, mbir)
+        # start asrock parser for motherboards overview pages
         motherboards_overviews = parsers.asrock.motherboard_page.start_parser_motherboard_pages(mbir)   
         add_motherboards_overviews(motherboards_overviews, mbor)
-
+        # start asrock parser for motherboards techspec pages
         motherboards_techspecs = parsers.asrock.motherboard_techspec.start_parser_motherboard_techspec(mbir, mbor)
         add_motherboards_techspecs(motherboards_techspecs, mbtr)
-
+        # start asrock parser for motherboards support pages
         motherboards_support = parsers.asrock.motherboard_support.start_parser_motherboard_support(mbir, mbor, mbtr, mbsr)
         add_motherboards_support(motherboards_support, mbsr)
 
