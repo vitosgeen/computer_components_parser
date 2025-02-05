@@ -16,7 +16,7 @@ def start_parser_moterboard_list():
         page += 1
 
         # download content
-        content = utils.download.download_file_by_selenium(url)
+        content = utils.download.download_file_by_selenium_unvisible(url)
         if content is None:
             break
 
