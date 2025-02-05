@@ -6,6 +6,8 @@ import parsers
 import parsers.asrock
 import parsers.asrock.motherboard_list
 import parsers.asrock.motherboard_page
+import parsers.asrock.motherboard_support
+import parsers.asrock.motherboard_techspec
 import parsers.asus
 import parsers.asus.motherboard_list
 import parsers.asus.motherboard_page
@@ -46,9 +48,7 @@ def start_parser(manufacture, db):
         add_motherboards(motherboards, mbir)
         motherboards_overviews = parsers.asus.motherboard_page.start_parser_motherboard_pages(mbir)
         add_motherboards_overviews(motherboards_overviews, mbor)
-        motherboards_techspecs = parsers.asus.motherboard_techspec.start_parser_motherboard_techspec(mbir, mbor)
-
-        motherboards_overviews_techspec_links = get_motherboard_overviews_by_type(mbor, manufacture.lower(), models.motherboard_overview.MotherboardOverview.TYPE_LINK_TECHNICAL_SPEC)
+        
         motherboards_techspecs = parsers.asus.motherboard_techspec.start_parser_motherboard_techspec(mbir, mbor)
         add_motherboards_techspecs(motherboards_techspecs, mbtr)
 
@@ -65,10 +65,17 @@ def start_parser(manufacture, db):
         motherboards = parsers.gigabyte.motherboard_list.start_parser_moterboard_list()
         add_motherboards(motherboards, mbir)
     elif manufacture.lower() == models.manufacturer.Manufacturer().ASROCK.lower():
-        # motherboards = parsers.asrock.motherboard_list.start_parser_moterboard_list()
-        # add_motherboards(motherboards, mbir)
+        motherboards = parsers.asrock.motherboard_list.start_parser_moterboard_list()
+        add_motherboards(motherboards, mbir)
         motherboards_overviews = parsers.asrock.motherboard_page.start_parser_motherboard_pages(mbir)   
         add_motherboards_overviews(motherboards_overviews, mbor)
+
+        motherboards_techspecs = parsers.asrock.motherboard_techspec.start_parser_motherboard_techspec(mbir, mbor)
+        add_motherboards_techspecs(motherboards_techspecs, mbtr)
+
+        motherboards_support = parsers.asrock.motherboard_support.start_parser_motherboard_support(mbir, mbor, mbtr, mbsr)
+        add_motherboards_support(motherboards_support, mbsr)
+
     elif manufacture.lower() == models.manufacturer.Manufacturer().BIOSTAR.lower():
         motherboards = parsers.biostar.motherboard_list.start_parser_moterboard_list()
         add_motherboards(motherboards, mbir)

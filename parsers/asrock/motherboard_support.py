@@ -28,10 +28,10 @@ def start_parser_motherboard_support(mbir, mbor, mbtr, mbsr):
         # it's for speed up parsing and testing and debugging and development only.
         # remove this line in production
         print("motherboard_item.link: ", motherboard_item.link)
-        if motherboard_item.link == "https://www.asrock.com/mb/AMD/B650E Taichi Lite/index.asp":
-            it_was = True
-        if not it_was:
-            continue
+        # if motherboard_item.link == "https://www.asrock.com/mb/AMD/B650 LiveMixer/index.asp":
+        #     it_was = True
+        # if not it_was:
+        #     continue
         # remove this line in production
         # start parse asus motherboard page
         key_motherboard_support = CACHE_PREFIX + str(motherboard_item.id)
