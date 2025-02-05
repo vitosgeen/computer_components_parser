@@ -26,6 +26,7 @@ import parsers.gigabyte.motherboard_list
 import parsers.msi
 import parsers.msi.motherboard_list
 import parsers.msi.motherboard_page
+import parsers.msi.motherboard_techspec
 import repository
 import repository.motherboard_item_repository
 import models.manufacturer
@@ -62,8 +63,11 @@ def start_parser(manufacture, db):
         # motherboards = parsers.msi.motherboard_list.start_parser_moterboard_list()
         # add_motherboards(motherboards, mbir)
         # start msi parser for motherboards overview pages
-        motherboards_overviews = parsers.msi.motherboard_page.start_parser_motherboard_pages(mbir)   
-        add_motherboards_overviews(motherboards_overviews, mbor)
+        # motherboards_overviews = parsers.msi.motherboard_page.start_parser_motherboard_pages(mbir)   
+        # add_motherboards_overviews(motherboards_overviews, mbor)
+        # start msi parser for motherboards techspec pages
+        motherboards_techspecs = parsers.msi.motherboard_techspec.start_parser_motherboard_techspec(mbir, mbor)
+        add_motherboards_techspecs(motherboards_techspecs, mbtr)
 
     elif manufacture.lower() == models.manufacturer.Manufacturer().GIGABYTE.lower():
         motherboards = parsers.gigabyte.motherboard_list.start_parser_moterboard_list()
