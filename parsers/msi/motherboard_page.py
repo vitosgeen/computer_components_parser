@@ -26,11 +26,11 @@ def start_parser_motherboard_pages(mbir):
         if "Module" in motherboard_item.link:
             continue
         motherboard_overviews = start_parser_motherboard_page(motherboard_item)
-        # if motherboard_overviews is None:
-        #     continue
-        # for motherboard_overview in motherboard_overviews:
-        #     motherboard_overview.mb_item_id = motherboard_item.id
-        #     motherboard_overviews_result.append(motherboard_overview)
+        if motherboard_overviews is None:
+            continue
+        for motherboard_overview in motherboard_overviews:
+            motherboard_overview.mb_item_id = motherboard_item.id
+            motherboard_overviews_result.append(motherboard_overview)
 
     return motherboard_overviews_result
         
