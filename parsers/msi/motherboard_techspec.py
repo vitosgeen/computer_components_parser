@@ -22,14 +22,19 @@ def start_parser_motherboard_techspec(mbir, mbor):
         for motherboard_overview in motherboard_overviews:
             # it's for speed up parsing and testing and debugging and development only.
             # remove this line in production
-            print("motherboard_overview.text 1: ", motherboard_overview.text)
+            print("motherboard_overview.text: ", motherboard_overview.text)
             # if motherboard_overview.text == "https://www.msi.com/Motherboard/WS-WRX80/Specification":
             #     it_was = True
             # if not it_was:
             #     continue
             # remove this line in production
             # start parse msi motherboard techspec page
-            print("motherboard_overview.text 2: ", motherboard_overview.text)
+            if "Module" in motherboard_overview.text:
+                continue
+            if "/xx/" in motherboard_overview.text:
+                continue
+            if "/xxx/" in motherboard_overview.text:
+                continue
             motherboard_techspecs = start_parser_motherboard_techspec_page(motherboard_overview)
             # print("motherboard_techspecs: ", motherboard_techspecs)
             if motherboard_techspecs is None:
@@ -52,21 +57,13 @@ def start_parser_motherboard_techspec_page(motherboard_overview):
         return
     
     print("start_parser_motherboard_techspec_page: ", motherboard_overview.text)
-    motherboard_techspecs = []
-
-    # random int for sleep time
-    sleep_delay = random.randint(1, 5)
-
-    time.sleep(sleep_delay)
     # get content from overview page like motherboard_overview.text
     content = utils.download.download_file_by_selenium_unvisible(motherboard_overview.text)
     if content is None:
         return
 
     # parse content from overview page find type link_overview, link_technical_spec, link_support
-    motherboard_techspecs += parse_motherboard_techspec_page(content, motherboard_overview)
-
-    return motherboard_techspecs
+    return parse_motherboard_techspec_page(content, motherboard_overview)
 
 def parse_motherboard_techspec_page(content, motherboard_overview):
     motherboard_techspecs = []

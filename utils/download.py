@@ -70,6 +70,7 @@ def download_file_by_selenium_unvisible(url):
 
     # get hash of url
     hash = hashlib.md5(url.encode()).hexdigest()
+    sleep_delay = random.randint(3,7)
 
     # check if file exists
     if os.path.exists(f'./downloads/{hash}'):
@@ -123,7 +124,7 @@ def download_file_by_selenium_unvisible(url):
 
         driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
         driver.get(url)
-        time.sleep(5)
+        time.sleep(sleep_delay)
         content = driver.page_source
         driver.quit()
 
