@@ -42,6 +42,8 @@ def create_driver_unvisible():
     chrome_options.add_argument('--disable-gpu')
     chrome_options.add_argument('--disable-extensions')
     chrome_options.add_argument("--headless")
+    # add measure of monitor size to avoid detection
+    chrome_options.add_argument("window-size=1920,1080")
 
     # nessary options for headless mode to work properly with selenium for avoiding bot detection
     # User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:134.0) Gecko/20100101 Firefox/134.0

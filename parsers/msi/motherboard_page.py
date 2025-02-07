@@ -25,6 +25,10 @@ def start_parser_motherboard_pages(mbir):
         # start parse msi motherboard page
         if "Module" in motherboard_item.link:
             continue
+        if "/xx/" in motherboard_item.link:
+            continue
+        if "/xxx/" in motherboard_item.link:
+            continue
         motherboard_overviews = start_parser_motherboard_page(motherboard_item)
         if motherboard_overviews is None:
             continue
