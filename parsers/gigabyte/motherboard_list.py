@@ -27,6 +27,7 @@ def start_parser_moterboard_list():
 
         # parse content
         tmp_motherboards_items = parse_content(content)
+        print(f"Motherboards items: {len(tmp_motherboards_items)}")
         if len(tmp_motherboards_items) == 0:
             break
 
