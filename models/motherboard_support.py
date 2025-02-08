@@ -2,6 +2,8 @@ class MotherboardSupport:
     TYPE_CPU = "cpu"
     TYPE_MEMORY = "memory"
     TYPE_DEVICE = "device"
+    TYPE_VGA = "vga"
+    TYPE_STORAGE = "storage"
     
     def __init__(self, id, mb_item_id, type, data, updated_at=None):
         self.id = id

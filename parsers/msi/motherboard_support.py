@@ -25,8 +25,8 @@ def start_parser_motherboard_support(mbir, mbor, mbtr, mbsr):
     for motherboard_item in motherboard_items:
         # it's for speed up parsing and testing and debugging and development only.
         # remove this line in production
-        print("start_parser_motherboard_support motherboard_item.link: ", motherboard_item.link)
-        # if motherboard_overview.text == "https://www.msi.com/Motherboard/WS-WRX80/Specification":
+        print("start_parser_motherboard_support motherboard_item.link: ", motherboard_item.link, " motherboard_item.id: ", motherboard_item.id)
+        # if motherboard_item.link == "https://www.msi.com/Motherboard/PRO-Z890-A-WIFI":
         #     it_was = True
         # if not it_was:
         #     continue
@@ -71,10 +71,15 @@ def start_parser_motherboard_support_page(motherboard_overview):
     # parse content from support page
     print("start_parser_motherboard_support_page: is usual link", motherboard_overview.text)
     mb = []
-    mb += parse_motherboard_support_page(motherboard_overview)
-    if len(mb) == 0:
-        print("mb support is empty")
-        exit(0)
+    # make 3 attempts to parse the page
+    for i in range(3):
+        try:
+            mb = parse_motherboard_support_page(motherboard_overview)
+            if len(mb) > 0:
+                break
+        except Exception as e:
+            print("start_parser_motherboard_support_page: exception", e)
+            sleep(random.randint(1, 3))
     return mb
 
 def parse_motherboard_support_page(motherboard_overview):
@@ -83,6 +88,12 @@ def parse_motherboard_support_page(motherboard_overview):
     link = motherboard_overview.text
     driver = utils.swebdriver.create_driver_unvisible()
     driver.get(link)
+    # define response code from driver
+    response_code = driver.execute_script("return document.readyState")
+    if response_code != "complete":
+        print("response_code: ", response_code)
+        driver.quit()
+        return motherboard_supports
     menu_tab_index = 0
     menu_elements = driver.find_elements(By.CSS_SELECTOR, 'main#support .tabs button.tab')
     for menu_element in menu_elements:
@@ -224,6 +235,10 @@ def make_motherboard_support_from_data_rows_pre(data_rows, type_row, motherboard
         motherboard_supports += make_motherboard_support_from_data_rows(data_rows, MotherboardSupport.TYPE_MEMORY, motherboard_overview)
     elif MotherboardSupport.TYPE_DEVICE in type_row:
         motherboard_supports += make_motherboard_support_from_data_rows(data_rows, MotherboardSupport.TYPE_DEVICE, motherboard_overview)
+    elif MotherboardSupport.TYPE_VGA in type_row:
+        motherboard_supports += make_motherboard_support_from_data_rows(data_rows, MotherboardSupport.TYPE_VGA, motherboard_overview)
+    elif MotherboardSupport.TYPE_STORAGE in type_row:
+        motherboard_supports += make_motherboard_support_from_data_rows(data_rows, MotherboardSupport.TYPE_STORAGE, motherboard_overview)
 
     return motherboard_supports
 
