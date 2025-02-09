@@ -23,6 +23,8 @@ import parsers.galax
 import parsers.galax.motherboard_list
 import parsers.gigabyte
 import parsers.gigabyte.motherboard_list
+import parsers.gigabyte.motherboard_page
+import parsers.gigabyte.motherboard_techspec
 import parsers.msi
 import parsers.msi.motherboard_list
 import parsers.msi.motherboard_page
@@ -63,7 +65,7 @@ def start_parser(manufacture, db):
     elif manufacture.lower() == models.manufacturer.Manufacturer().MSI.lower():
         # motherboards = parsers.msi.motherboard_list.start_parser_moterboard_list()
         # add_motherboards(motherboards, mbir)
-        # start msi parser for motherboards overview pages
+        # # start msi parser for motherboards overview pages
         # motherboards_overviews = parsers.msi.motherboard_page.start_parser_motherboard_pages(mbir)   
         # add_motherboards_overviews(motherboards_overviews, mbor)
         # start msi parser for motherboards techspec pages
@@ -74,8 +76,14 @@ def start_parser(manufacture, db):
         add_motherboards_support(motherboards_support, mbsr)
 
     elif manufacture.lower() == models.manufacturer.Manufacturer().GIGABYTE.lower():
-        motherboards = parsers.gigabyte.motherboard_list.start_parser_moterboard_list()
-        add_motherboards(motherboards, mbir)
+        # motherboards = parsers.gigabyte.motherboard_list.start_parser_moterboard_list()
+        # add_motherboards(motherboards, mbir)
+        # start msi parser for motherboards overview pages
+        motherboards_overviews = parsers.gigabyte.motherboard_page.start_parser_motherboard_pages(mbir)  
+        add_motherboards_overviews(motherboards_overviews, mbor)
+        # start msi parser for motherboards techspec pages
+        # motherboards_techspecs = parsers.gigabyte.motherboard_techspec.start_parser_motherboard_techspec(mbir, mbor)
+        # add_motherboards_techspecs(motherboards_techspecs, mbtr)
     elif manufacture.lower() == models.manufacturer.Manufacturer().ASROCK.lower():
         # start asrock parser for motherboards list
         motherboards = parsers.asrock.motherboard_list.start_parser_moterboard_list()
@@ -120,7 +128,10 @@ def add_motherboards_overviews(motherboards_overviews, mbor):
         # check if motherboard overview exists in db by mb_item_id and type
         motherboard_overview_loaded = mbor.getOverviewsByMbItemIdTypeText(motherboard_overview.mb_item_id, motherboard_overview.type, motherboard_overview.text)
         if motherboard_overview_loaded is None:
+            print('add_motherboards_overviews: ' + motherboard_overview.text)
             mbor.add(motherboard_overview)
+        else:
+            print('add_motherboards_overviews: ' + motherboard_overview.text + ' exists')
 
 def add_motherboards_techspecs(motherboards_techspecs, mbtr):
     for motherboard_techspec in motherboards_techspecs:
