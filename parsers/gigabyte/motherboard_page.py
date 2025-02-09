@@ -22,22 +22,22 @@ def start_parser_motherboard_pages(mbir):
         print("start_parser_motherboard_page: ", motherboard_item.link)
         # it's for speed up parsing and testing and debugging and development only.
         # remove this line in production
-        if motherboard_item.link == "https://www.gigabyte.com/Motherboard/AORUS-RGB-SLI-HB-Bridge":
-            it_was = True
-        if not it_was:
-            continue
+        # if motherboard_item.link == "https://www.gigabyte.com/Motherboard/AORUS-RGB-SLI-HB-Bridge":
+        #     it_was = True
+        # if not it_was:
+        #     continue
         # remove this line in production
         # start parse gigabyte motherboard page
         if "GC-TPM" in motherboard_item.link:
             continue
-        # if "/xx/" in motherboard_item.link:
-        #     continue
+        if "-Bridge" in motherboard_item.link:
+            continue
         # if "/xxx/" in motherboard_item.link:
         #     continue
         motherboard_overviews = start_parser_motherboard_page(motherboard_item)
-        print("motherboard_overviews: ", len(motherboard_overviews))
         if motherboard_overviews is None:
             continue
+        print("motherboard_overviews: ", len(motherboard_overviews))
         for motherboard_overview in motherboard_overviews:
             motherboard_overview.mb_item_id = motherboard_item.id
             motherboard_overviews_result.append(motherboard_overview)
@@ -49,17 +49,11 @@ def start_parser_motherboard_page(motherboard_item):
     print("start_parser_motherboard_page: ", motherboard_item.link, motherboard_item.id)
 
     motherboard_overviews = []
-
-    # random int for sleep time
-    sleep_delay = random.randint(1, 5)
-
     # get content from overview page like motherboard_item.link
-    content = utils.download.download_file_by_selenium(motherboard_item.link)
+    content = utils.download.download_file_by_selenium_unvisible(motherboard_item.link)
     if content is None:
-        return
-    
-    time.sleep(sleep_delay)
-    
+        return motherboard_overviews
+
     is_missing = page_for_missing(motherboard_item.link)
     # parse content from overview page find type link_overview, link_technical_spec, link_support
     motherboard_overviews_links = parse_motherboard_overview_links(content, motherboard_item)
@@ -104,10 +98,8 @@ def parse_motherboard_overview_links(content, motherboard_item):
         # find link_overview, link_technical_spec, link_support
         for item in items:
             type_item = ""
-            if "overview" in item.text.lower():
+            if "feature" in item.text.lower():
                 type_item = MotherboardOverview.TYPE_LINK_OVERVIEW
-            elif "features" in item.text.lower() or "spec" in item.text.lower():
-                type_item = MotherboardOverview.TYPE_LINK_TECHNICAL_SPEC
             elif "tech" in item.text.lower() or "spec" in item.text.lower():
                 type_item = MotherboardOverview.TYPE_LINK_TECHNICAL_SPEC
             elif "support" in item.text.lower():
@@ -184,6 +176,7 @@ def parse_motherboard_description(content, motherboard_item):
         ".model-content .section-top  .summary li",
         "[class^=conbox] .title, [class^=conbox] .text",
         ".InnerGIGABYTEContent .text",
+        ".section-right .summary",
     ]
     soup = BeautifulSoup(content, "html.parser")
     motherboard_overview = []
@@ -234,6 +227,10 @@ def parse_motherboard_image(content, motherboard_item):
             # if src is started with // add https: to src
             if src.find("//") == 0:
                 src = "https:" + src
+
+            # if src is not started with http add origin to src
+            if src.find("http") == -1:
+                src = utils.utils.get_origin(motherboard_item.link) + src
 
             motherboard_overview.append(MotherboardOverview(0, motherboard_item.id, MotherboardOverview.TYPE_IMAGE, src))
     return motherboard_overview
