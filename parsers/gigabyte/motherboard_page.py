@@ -22,7 +22,7 @@ def start_parser_motherboard_pages(mbir):
         print("start_parser_motherboard_page: ", motherboard_item.link)
         # it's for speed up parsing and testing and debugging and development only.
         # remove this line in production
-        # if motherboard_item.link == "https://www.gigabyte.com/Motherboard/AORUS-RGB-SLI-HB-Bridge":
+        # if motherboard_item.link == "https://www.gigabyte.com/Motherboard/GP-OP-AMP-rev-10":
         #     it_was = True
         # if not it_was:
         #     continue
@@ -32,8 +32,10 @@ def start_parser_motherboard_pages(mbir):
             continue
         if "-Bridge" in motherboard_item.link:
             continue
-        # if "/xxx/" in motherboard_item.link:
-        #     continue
+        if "MiniSAS" in motherboard_item.link:
+            continue
+        if "GP-OP-AMP" in motherboard_item.link:
+            continue
         motherboard_overviews = start_parser_motherboard_page(motherboard_item)
         if motherboard_overviews is None:
             continue
