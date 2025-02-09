@@ -43,16 +43,11 @@ def start_parser_motherboard_page(motherboard_item):
     print("start_parser_motherboard_page: ", motherboard_item.link)
 
     motherboard_overviews = []
-
-    # random int for sleep time
-    sleep_delay = random.randint(1, 5)
-
+    
     # get content from overview page like motherboard_item.link
     content = utils.download.download_file_by_selenium(motherboard_item.link)
     if content is None:
-        return
-    
-    time.sleep(sleep_delay)
+        return None
     
     # parse content from overview page find type link_overview, link_technical_spec, link_support
     motherboard_overviews_links = parse_motherboard_overview_links(content, motherboard_item)

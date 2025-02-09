@@ -17,6 +17,8 @@ import utils.swebdriver
 # const prefix for cache key
 CACHE_PREFIX = "support_motherboard_item_"
 
+sleep_time_random = random.randint(5, 10)
+
 def start_parser_motherboard_support(mbir, mbor, mbtr, mbsr):
     # get all msi motherboard items from db
     motherboard_items = mbir.getAllMotherboardsByManufacturer(Manufacturer().MSI)
@@ -105,7 +107,7 @@ def parse_motherboard_support_page(motherboard_overview):
             print("execute_script_str: ", execute_script_str)
             driver.execute_script(execute_script_str)
             # menu_element.click()
-            sleep(10)
+            sleep(sleep_time_random)
             
             # get elements sub menu
             sub_menu_elements = driver.find_elements(By.CSS_SELECTOR, '#support .subTabs button')
@@ -121,7 +123,7 @@ def parse_motherboard_support_page(motherboard_overview):
                 tab_index_sub_menu += 1
                 print("execute_script_str: ", execute_script_str)
                 driver.execute_script(execute_script_str)
-                sleep(10)
+                sleep(sleep_time_random)
                 
                 # check if driver has badges buttons "#support .badges button" and avoid errors
                 badges_elements = driver.find_elements(By.CSS_SELECTOR, '#support .badges button')
@@ -158,7 +160,7 @@ def parse_motherboard_support_page_subpage(driver):
             execute_script_str = "document.querySelectorAll('" + selector_pagination + "')[" + str(key) + "].click()"
             print("execute_script_str: ", execute_script_str)
             driver.execute_script(execute_script_str)
-            sleep(10)
+            sleep(sleep_time_random)
             table_body_rows = driver.find_elements(By.CSS_SELECTOR, selector_table_body)
             data_rows = collect_data_rows(table_header, table_body_rows)
     else:
@@ -180,7 +182,7 @@ def parse_motherboard_support_page_subpage_with_badges(driver, badges_elements):
         print("execute_script_str: ", execute_script_str)
         driver.execute_script(execute_script_str)
         badge_element_index += 1
-        sleep(10)
+        sleep(sleep_time_random)
         selector_table_body = '#support .compatibility table tbody tr'
         selector_pagination = '#support .pagination__link button'
         pagination_elements = driver.find_elements(By.CSS_SELECTOR, selector_pagination)
@@ -195,7 +197,7 @@ def parse_motherboard_support_page_subpage_with_badges(driver, badges_elements):
                 execute_script_str = "document.querySelectorAll('" + selector_pagination + "')[" + str(key) + "].click()"
                 print("execute_script_str: ", execute_script_str)
                 driver.execute_script(execute_script_str)
-                sleep(10)
+                sleep(sleep_time_random)
                 table_body_rows = driver.find_elements(By.CSS_SELECTOR, selector_table_body)
                 data_rows += collect_data_rows(table_header, table_body_rows)
         else:
