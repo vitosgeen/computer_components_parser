@@ -12,19 +12,24 @@ def start_parser_motherboard_techspec(mbir, mbor):
     # get all gigabyte motherboard items from db
     motherboard_items = mbir.getAllMotherboardsByManufacturer(Manufacturer().GIGABYTE)
     motherboard_techspecs_result = []
+    it_was = False
     for motherboard_item in motherboard_items:
         print("start_parser_motherboard_page: ", motherboard_item.link, motherboard_item.id)
         # it's for speed up parsing and testing and debugging and development only.
         # remove this line in production
-        # if motherboard_item.link == "https://www.gigabyte.com/Motherboard/AORUS-RGB-SLI-HB-Bridge":
-        #     it_was = True
-        # if not it_was:
-        #     continue
+        if motherboard_item.link == "https://www.gigabyte.com/Motherboard/B550I-AORUS-PRO-AX":
+            it_was = True
+        if not it_was:
+            continue
         # remove this line in production
         # start parse gigabyte motherboard page
         if "GC-TPM" in motherboard_item.link:
             continue
         if "-Bridge" in motherboard_item.link:
+            continue
+        if "MiniSAS" in motherboard_item.link:
+            continue
+        if "GP-TN90" in motherboard_item.link:
             continue
         
         # get motherboard_overview techspec link from db by mb_item_id
@@ -91,6 +96,7 @@ def parse_motherboard_techspec_rows(content, motherboard_overview):
     soup = BeautifulSoup(content, 'html.parser')
     selectors = [
         '.sp-section .display-table-row',
+        '.all-Products .owl-area .owl-item .specRow',
     ]
     motherboard_techspecs = []
     for index, selector in enumerate(selectors):
@@ -109,7 +115,7 @@ def parse_motherboard_techspec_rows(content, motherboard_overview):
     return motherboard_techspecs
 
 def parse_motherboard_techspec_rows_1(items, motherboard_overview):
-    print("parse_motherboard_techspec_rows_2")
+    print("parse_motherboard_techspec_rows_2", motherboard_overview.text)
     motherboard_techspecs = []
     for item in items:
         mts = parse_motherboard_techspec_type_row_1(item, motherboard_overview)
@@ -504,120 +510,107 @@ def parse_motherboard_techspec_type_name_2(item, motherboard_overview):
     return None
 
 def parse_motherboard_techspec_type_row_2(item, motherboard_overview):
-    h2 = item.select_one('h2')
+    h2 = item.select_one('.specTitle')
     if h2 is None:
         return None
     h2 = h2.text
 
+    general_selector = '.specDesc'
     if "processor" in h2.lower():
-        item_elements = item.select('ul li, ol li, p')
+        item_elements = item.select(general_selector)
         return parse_motherboard_techspec_type_row_2_value(MotherboardTechSpec.TYPE_CPU, motherboard_overview.mb_item_id, item_elements)
     elif "chipset" in h2.lower():
-        item_elements = item.select('ul li, ol li, p')
+        item_elements = item.select(general_selector)
         return parse_motherboard_techspec_type_row_2_value(MotherboardTechSpec.TYPE_CHIPSET, motherboard_overview.mb_item_id, item_elements)
     elif "memory" in h2.lower():
-        item_elements = item.select('ul li, ol li, p')
+        item_elements = item.select(general_selector)
         return parse_motherboard_techspec_type_row_2_value(MotherboardTechSpec.TYPE_MEMORY, motherboard_overview.mb_item_id, item_elements)
     elif "graphics" in h2.lower():
-        item_elements = item.select('ul li, ol li, p')
+        item_elements = item.select(general_selector)
         return parse_motherboard_techspec_type_row_2_value(MotherboardTechSpec.TYPE_GRAPHICS, motherboard_overview.mb_item_id, item_elements)
     elif "expansion slots" in h2.lower():
-        item_elements = item.select('ul li, ol li, p')
+        item_elements = item.select(general_selector)
         return parse_motherboard_techspec_type_row_2_value(MotherboardTechSpec.TYPE_EXPANSION_SLOTS, motherboard_overview.mb_item_id, item_elements)
     elif "multi-gpu" in h2.lower():
-        item_elements = item.select('ul li, ol li, p')
+        item_elements = item.select(general_selector)
         return parse_motherboard_techspec_type_row_2_value(MotherboardTechSpec.TYPE_OTHER, motherboard_overview.mb_item_id, item_elements)
     elif "storage" in h2.lower():
-        item_elements = item.select('ul li, ol li, p')
+        item_elements = item.select(general_selector)
         return parse_motherboard_techspec_type_row_2_value(MotherboardTechSpec.TYPE_STORAGE, motherboard_overview.mb_item_id, item_elements)
     elif "sata" in h2.lower():
-        item_elements = item.select('ul li, ol li, p')
+        item_elements = item.select(general_selector)
         return parse_motherboard_techspec_type_row_2_value(MotherboardTechSpec.TYPE_STORAGE, motherboard_overview.mb_item_id, item_elements)
     elif "ssd" in h2.lower():
-        item_elements = item.select('ul li, ol li, p')
+        item_elements = item.select(general_selector)
         return parse_motherboard_techspec_type_row_2_value(MotherboardTechSpec.TYPE_STORAGE, motherboard_overview.mb_item_id, item_elements)
     elif "lan" in h2.lower():
-        item_elements = item.select('ul li, ol li, p')
+        item_elements = item.select(general_selector)
         return parse_motherboard_techspec_type_row_2_value(MotherboardTechSpec.TYPE_LAN, motherboard_overview.mb_item_id, item_elements)
     elif "usb" in h2.lower():
-        item_elements = item.select('ul li, ol li, p')
+        item_elements = item.select(general_selector)
         return parse_motherboard_techspec_type_row_2_value(MotherboardTechSpec.TYPE_USB, motherboard_overview.mb_item_id, item_elements)
     elif "audio" in h2.lower():
-        item_elements = item.select('ul li, ol li, p')
+        item_elements = item.select(general_selector)
         return parse_motherboard_techspec_type_row_2_value(MotherboardTechSpec.TYPE_AUDIO, motherboard_overview.mb_item_id, item_elements)
     elif "back panel" in h2.lower():
-        item_elements = item.select('ul li, ol li, p')
+        item_elements = item.select(general_selector)
         return parse_motherboard_techspec_type_row_2_value(MotherboardTechSpec.TYPE_BACK_PANEL_PORTS, motherboard_overview.mb_item_id, item_elements)
     elif "power connector" in h2.lower():
-        item_elements = item.select('ul li, ol li, p')
+        item_elements = item.select(general_selector)
         return parse_motherboard_techspec_type_row_2_value(MotherboardTechSpec.TYPE_INTERNAL_I_O_PORTS, motherboard_overview.mb_item_id, item_elements)
     elif "fan connectors" in h2.lower():
-        item_elements = item.select('ul li, ol li, p')
+        item_elements = item.select(general_selector)
         return parse_motherboard_techspec_type_row_2_value(MotherboardTechSpec.TYPE_INTERNAL_I_O_PORTS, motherboard_overview.mb_item_id, item_elements)
     elif "system connectors" in h2.lower():
-        item_elements = item.select('ul li, ol li, p')
+        item_elements = item.select(general_selector)
         return parse_motherboard_techspec_type_row_2_value(MotherboardTechSpec.TYPE_INTERNAL_I_O_PORTS, motherboard_overview.mb_item_id, item_elements)
     elif "internal" in h2.lower():
-        item_elements = item.select('ul li, ol li, p')
+        item_elements = item.select(general_selector)
         return parse_motherboard_techspec_type_row_2_value(MotherboardTechSpec.TYPE_INTERNAL_I_O_PORTS, motherboard_overview.mb_item_id, item_elements)
     elif "feature" in h2.lower():
-        item_elements = item.select('ul li, ol li, p')
+        item_elements = item.select(general_selector)
         return parse_motherboard_techspec_type_row_2_value(MotherboardTechSpec.TYPE_SPECIAL_FEATURES, motherboard_overview.mb_item_id, item_elements)
     elif "bios" in h2.lower():
-        item_elements = item.select('ul li, ol li, p')
+        item_elements = item.select(general_selector)
         return parse_motherboard_techspec_type_row_2_value(MotherboardTechSpec.TYPE_BIOS, motherboard_overview.mb_item_id, item_elements)
     elif "manageability" in h2.lower():
-        item_elements = item.select('ul li, ol li, p')
+        item_elements = item.select(general_selector)
         return parse_motherboard_techspec_type_row_2_value(MotherboardTechSpec.TYPE_MANAGEABILITY, motherboard_overview.mb_item_id, item_elements)
     elif "accessories" in h2.lower():
-        item_elements = item.select('ul li, ol li, p')
+        item_elements = item.select(general_selector)
         return parse_motherboard_techspec_type_row_2_value(MotherboardTechSpec.TYPE_ACCESSORIES, motherboard_overview.mb_item_id, item_elements)
     elif "jumpers" in h2.lower():
-        item_elements = item.select('ul li, ol li, p')
+        item_elements = item.select(general_selector)
         return parse_motherboard_techspec_type_row_2_value(MotherboardTechSpec.TYPE_ACCESSORIES, motherboard_overview.mb_item_id, item_elements)
     elif "switches" in h2.lower():
-        item_elements = item.select('ul li, ol li, p')
+        item_elements = item.select(general_selector)
         return parse_motherboard_techspec_type_row_2_value(MotherboardTechSpec.TYPE_ACCESSORIES, motherboard_overview.mb_item_id, item_elements)
     elif "operating system" in h2.lower():
-        item_elements = item.select('ul li, ol li, p')
+        item_elements = item.select(general_selector)
         return parse_motherboard_techspec_type_row_2_value(MotherboardTechSpec.TYPE_OPERATING_SYSTEM, motherboard_overview.mb_item_id, item_elements)
     elif "form factor" in h2.lower():
-        item_elements = item.select('ul li, ol li, p')
+        item_elements = item.select(general_selector)
         return parse_motherboard_techspec_type_row_2_value(MotherboardTechSpec.TYPE_FORM_FACTOR, motherboard_overview.mb_item_id, item_elements)
     elif "i/o controller" in h2.lower():
-        item_elements = item.select('ul li, ol li, p')
+        item_elements = item.select(general_selector)
         return parse_motherboard_techspec_type_row_2_value(MotherboardTechSpec.TYPE_OTHER, motherboard_overview.mb_item_id, item_elements)
     elif "hardware monitor" in h2.lower():
-        item_elements = item.select('ul li, ol li, p')
+        item_elements = item.select(general_selector)
         return parse_motherboard_techspec_type_row_2_value(MotherboardTechSpec.TYPE_OTHER, motherboard_overview.mb_item_id, item_elements)
     elif "raid" in h2.lower():
-        item_elements = item.select('ul li, ol li, p')
+        item_elements = item.select(general_selector)
         return parse_motherboard_techspec_type_row_2_value(MotherboardTechSpec.TYPE_OTHER, motherboard_overview.mb_item_id, item_elements)
         
 
 def parse_motherboard_techspec_type_row_2_value(type, mb_item_id, item_elements):
     motherboard_techspecs = []
     for item_element in item_elements:
-        if item_element is None:
-            continue
-        # if item_element is p
-        if item_element.name == "p":
-            value_html = str(item_element)
-            value_html = value_html.replace("<br/>", "|||||")
-            value_html = BeautifulSoup(value_html, 'html.parser')
-            values = value_html.text.split("|||||")
-            for value in values:
-                motherboard_techspec = MotherboardTechSpec(
-                    id=None,
-                    mb_item_id=mb_item_id,
-                    type=type,
-                    text=value,
-                    updated_at=None
-                )
-                motherboard_techspecs.append(motherboard_techspec)
-            pass
-        else:
-            value = item_element.text
+        value_html = str(item_element)
+        value_html = value_html.replace("<br/>", "|||||")
+        value_html = value_html.replace("\n", "|||||")
+        value_html = BeautifulSoup(value_html, 'html.parser')
+        values = value_html.text.split("|||||")
+        for value in values:
             motherboard_techspec = MotherboardTechSpec(
                 id=None,
                 mb_item_id=mb_item_id,
