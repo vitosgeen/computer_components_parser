@@ -17,10 +17,10 @@ def start_parser_motherboard_techspec(mbir, mbor):
         print("start_parser_motherboard_page: ", motherboard_item.link, motherboard_item.id)
         # it's for speed up parsing and testing and debugging and development only.
         # remove this line in production
-        if motherboard_item.link == "https://www.gigabyte.com/Motherboard/B550I-AORUS-PRO-AX":
-            it_was = True
-        if not it_was:
-            continue
+        # if motherboard_item.link == "https://www.gigabyte.com/Motherboard/B550I-AORUS-PRO-AX":
+        #     it_was = True
+        # if not it_was:
+        #     continue
         # remove this line in production
         # start parse gigabyte motherboard page
         if "GC-TPM" in motherboard_item.link:
@@ -30,6 +30,8 @@ def start_parser_motherboard_techspec(mbir, mbor):
         if "MiniSAS" in motherboard_item.link:
             continue
         if "GP-TN90" in motherboard_item.link:
+            continue
+        if "GC-CI" in motherboard_item.link:
             continue
         
         # get motherboard_overview techspec link from db by mb_item_id
