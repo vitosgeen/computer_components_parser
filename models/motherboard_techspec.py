@@ -74,5 +74,6 @@ class MotherboardTechSpec:
             MotherboardTechSpec.TYPE_BIOS: "BIOS",
             MotherboardTechSpec.TYPE_MANAGEABILITY: "Manageability",
             MotherboardTechSpec.TYPE_FORM_FACTOR: "Form Factor",
-            MotherboardTechSpec.TYPE_NOTE: "Note"
+            MotherboardTechSpec.TYPE_NOTE: "Note",
+            MotherboardTechSpec.TYPE_OTHER: "Other"
         }
