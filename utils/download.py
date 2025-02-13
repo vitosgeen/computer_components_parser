@@ -1,5 +1,7 @@
 
 import hashlib
+from lxml import html
+import json
 import os
 import random
 import requests
@@ -71,7 +73,8 @@ def download_file_by_selenium_unvisible(url):
     # get hash of url
     hash = hashlib.md5(url.encode()).hexdigest()
     sleep_delay = random.randint(3,7)
-
+    print('url:', url)
+    print('hash file:', hash)
     # check if file exists
     if os.path.exists(f'./downloads/{hash}'):
         return read_file(f'./downloads/{hash}')
@@ -126,6 +129,11 @@ def download_file_by_selenium_unvisible(url):
         driver.get(url)
         time.sleep(sleep_delay)
         content = driver.page_source
+        response_code = driver.execute_script("return document.readyState")
+        if response_code != "complete":
+            print("response_code: ", response_code)
+            driver.quit()
+            return None
         driver.quit()
 
     except Exception as e:
@@ -236,3 +244,16 @@ def save_content_to_file(content, file):
     except Exception as e:
         print(e)
         return None
+    
+def parse_json_from_content(content):
+    try:
+        tree = html.fromstring(content)
+        text = tree.xpath('//pre/text()')
+        if len(text) == 0:
+            return None
+        json_content = json.loads(text[0])
+    except Exception as e:
+        print(e)
+        return None
+    
+    return json_content
