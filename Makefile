@@ -20,7 +20,7 @@ run-all:
 	python main.py -m colorful
 	python main.py -m galax
 
-# clear code cache with file pyclean.sh
+# script to clear Python cache
 clear-pycache:
 	@echo "Clearing pycache"
 	./pyclean.sh
