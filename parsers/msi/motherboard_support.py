@@ -1,4 +1,5 @@
 import json
+import traceback
 import random
 from time import sleep
 from bs4 import BeautifulSoup
@@ -26,7 +27,8 @@ def start_parser_motherboard_support(mbir, mbor, mbtr, mbsr):
     motherboard_support_result = []
     it_was = False
     for motherboard_item in motherboard_items:
-        # if motherboard_item.id != 717:
+        motherboard_support_result_rows = []
+        # if motherboard_item.id != 869:
         #     continue
         # it's for speed up parsing and testing and debugging and development only.
         # remove this line in production
@@ -36,10 +38,23 @@ def start_parser_motherboard_support(mbir, mbor, mbtr, mbsr):
         # if not it_was:
         #     continue
         # remove this line in production
+        if "TPM-20" in motherboard_item.link:
+            continue
+        if "H610TI-S01" in motherboard_item.link:
+            continue
+        if "H510TI-S01" in motherboard_item.link:
+            continue
+        if "H510TI-S03" in motherboard_item.link:
+            continue
+        if "H510TI-S05" in motherboard_item.link:
+            continue
         key_motherboard_support = CACHE_PREFIX + str(motherboard_item.id)
         # check if cache exists
         json_cache = utils.cache.get_json_cache(key_motherboard_support)
-        if json_cache is not None:
+        json_cache_is_valid = utils.cache.check_cache_size_is_valid(key_motherboard_support)
+        if json_cache_is_valid is False:
+            print("cache is not valid: ", key_motherboard_support)
+        if json_cache is not None and json_cache_is_valid:
             print("cache exists: ", key_motherboard_support)
             continue
         
@@ -53,14 +68,23 @@ def start_parser_motherboard_support(mbir, mbor, mbtr, mbsr):
             motherboard_support = start_parser_motherboard_support_page(motherboard_overview)
             
             if motherboard_support is None:
+                print("motherboard_support is None")
+                continue
+            if len(motherboard_support) == 0:
+                print("motherboard_support is empty")
                 continue
             for motherboard_support_row in motherboard_support:
                 motherboard_support_row.mb_item_id = motherboard_item.id
                 motherboard_support_result.append(motherboard_support_row)
+                motherboard_support_result_rows.append(motherboard_support_row)
 
             mbsr.add_motherboards_support(motherboard_support)
             # set json cache
-            utils.cache.set_json_cache(key_motherboard_support, motherboard_support)
+        if len(motherboard_support_result) > 0:
+            utils.cache.set_json_cache(key_motherboard_support, motherboard_support_result_rows)
+        else:
+            print("motherboard_support_result is empty")
+            exit(0)
 
     return motherboard_support_result
 
@@ -84,6 +108,8 @@ def start_parser_motherboard_support_page(motherboard_overview):
                 break
         except Exception as e:
             print("start_parser_motherboard_support_page: exception", e)
+            # print traceback
+            traceback.print_exception(type(e), e, e.__traceback__)
             sleep(random.randint(1, 3))
     return mb
 
@@ -91,6 +117,12 @@ def parse_motherboard_support_page_from_api(motherboard_overview):
     motherboard_supports = []
     
     link = motherboard_overview.text
+    #modifying the link to add some parameters for avoiding caching 
+    # if "#" not in link:
+    #     if "?" in link:
+    #         link = link + "&_=" + str(random.randint(1, 1000000000))
+    #     else:
+    #         link = link + "?_=" + str(random.randint(1, 1000000000))
     driver = utils.swebdriver.create_driver_unvisible()
     driver.get(link)
     # define response code from driver
@@ -101,11 +133,18 @@ def parse_motherboard_support_page_from_api(motherboard_overview):
         return motherboard_supports
     menu_tab_index = 0
     menu_elements = driver.find_elements(By.CSS_SELECTOR, 'main#support .tabs button.tab')
+    if menu_elements is None or len(menu_elements) == 0:
+        driver.quit()
+        return motherboard_supports
+    compatibility_isnt_found = False
     for menu_element in menu_elements:
+        if menu_element is None:
+            continue
         menu_element_text = menu_element.get_attribute("textContent").lower().strip()
         print("menu_element text: ", menu_element.get_attribute("textContent"))
         # retrieve the content of the tab and check if it contains "cpu" or "Memory"
         if "compatibility" in menu_element_text.lower():
+            compatibility_isnt_found = True
             execute_script_str = "document.querySelector('main#support .tabs button.tab:nth-child(" + str(menu_tab_index + 1) + ")').click()"
             print("execute_script_str: ", execute_script_str)
             driver.execute_script(execute_script_str)
@@ -150,6 +189,14 @@ def parse_motherboard_support_page_from_api(motherboard_overview):
                     for page in range(1, total_pages):
                         url = template_url.format(product_from_url, MotherboardSupport.TYPE_CPU, page, per_page)
                         data_json = parse_motherboard_support_page_from_api_subpage_json(url)
+                        is_valid = parse_motherboard_support_page_from_api_subpage_json_validate(data_json)
+                        if is_valid is False:
+                            print("range is_valid 0 is False")
+                            continue
+                        is_valid = parse_motherboard_support_page_from_api_subpage_json_validate_cpu(data_json)
+                        if is_valid is False:
+                            print("range is_valid 1 is False")
+                            continue
                         data_rows += data_json["result"]["downloads"]["cpu"]["list"]
                         if len(data_rows) >= total:
                             break
@@ -190,6 +237,14 @@ def parse_motherboard_support_page_from_api(motherboard_overview):
                     for page in range(1, total_pages):
                         url = template_url.format(product_from_url, "mem", page, per_page)
                         data_json = parse_motherboard_support_page_from_api_subpage_json(url)
+                        is_valid = parse_motherboard_support_page_from_api_subpage_json_validate(data_json)
+                        if is_valid is False:
+                            print("range is_valid 0 is False")
+                            continue
+                        is_valid = parse_motherboard_support_page_from_api_subpage_json_validate_memory(data_json)
+                        if is_valid is False:
+                            print("range is_valid 1 is False")
+                            continue
                         type_title = data_json["result"]["downloads"]["type_title"]
                         for type_title_item in type_title:
                             if type_title_item in data_json["result"]["downloads"]:
@@ -226,6 +281,14 @@ def parse_motherboard_support_page_from_api(motherboard_overview):
                     for page in range(1, total_pages):
                         url = template_url.format(product_from_url, MotherboardSupport.TYPE_VGA, page, per_page)
                         data_json = parse_motherboard_support_page_from_api_subpage_json(url)
+                        is_valid = parse_motherboard_support_page_from_api_subpage_json_validate(data_json)
+                        if is_valid is False:
+                            print("range is_valid 0 is False")
+                            continue
+                        is_valid = parse_motherboard_support_page_from_api_subpage_json_validate_vga(data_json)
+                        if is_valid is False:
+                            print("range is_valid 1 is False")
+                            continue
                         data_rows += data_json["result"]["downloads"]["vga"]["list"]
                         if len(data_rows) >= total:
                             break
@@ -282,16 +345,25 @@ def parse_motherboard_support_page_from_api(motherboard_overview):
                     for page in range(1, total_pages):
                         url = template_url.format(product_from_url, 'testReport', page, per_page)
                         data_json = parse_motherboard_support_page_from_api_subpage_json(url)
+                        is_valid = parse_motherboard_support_page_from_api_subpage_json_validate(data_json)
+                        if is_valid is False:
+                            print("is_valid 0 is False")
+                            continue
+                        is_valid = parse_motherboard_support_page_from_api_subpage_json_validate_device(data_json)
+                        if is_valid is False:
+                            print("is_valid 1 is False")
+                            continue
                         data_rows += data_json["result"]["downloads"]["testReport"]["list"]
                         if len(data_rows) >= total:
                             break
                         
                     motherboard_supports += make_motherboard_support_from_data_rows_pre(data_rows, sub_menu_element_text, motherboard_overview)
-        
+
         menu_tab_index+=1
 
     driver.quit()
-    
+    if compatibility_isnt_found is False:
+        print("compatibility isn't found")
     return motherboard_supports
 
 def parse_motherboard_support_page_from_api_subpage_json_validate_device(data_json):
@@ -347,12 +419,14 @@ def parse_motherboard_support_page_from_api_subpage_json_validate(data_json):
     return True
 
 def parse_motherboard_support_page_from_api_subpage_json(url):
-    data_json = None
+    data_json = {}
     try:
         content = utils.download.download_file_by_selenium_unvisible(url)
         if content is None:
             return data_json
         data_json = utils.download.parse_json_from_content(content)
+        if data_json is None:
+            return data_json
     except Exception as e:
         print("parse_motherboard_support_page_from_api_subpage_json: exception", e)
         return data_json
@@ -535,6 +609,8 @@ def collect_data_rows(table_header, table_body_rows):
     for table_body_row in table_body_rows:
         data_cells = {}
         table_body_columns = table_body_row.find_elements(By.CSS_SELECTOR, 'td')
+        if table_body_columns is None or len(table_body_columns) == 0:
+            continue
         for i in range(len(table_body_columns)):
             data_cells[table_header[i]] = table_body_columns[i].text
 
