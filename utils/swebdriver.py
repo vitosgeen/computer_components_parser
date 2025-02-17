@@ -42,6 +42,7 @@ def create_driver_unvisible():
     chrome_options.add_argument('--disable-gpu')
     chrome_options.add_argument('--disable-extensions')
     chrome_options.add_argument("--headless")
+    chrome_options.add_argument("--disk-cache-size=0")
     # add measure of monitor size to avoid detection
     chrome_options.add_argument("window-size=1920,1080")
 
