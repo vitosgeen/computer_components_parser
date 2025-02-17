@@ -99,7 +99,7 @@ def parse_motherboard_support_page(motherboard_overview):
     menu_tab_index = 0
     
     product_id = driver.find_element(By.CSS_SELECTOR, '#isPid').get_attribute("value")
-    if product_id == "":
+    if product_id == "" or product_id is None:
         driver.quit()
         return motherboard_supports
     menu_elements = driver.find_elements(By.CSS_SELECTOR, '.model-content ul.info-nav li')
@@ -119,11 +119,11 @@ def parse_motherboard_support_page(motherboard_overview):
             if html_content is None:
                 print("content is None")
                 continue
-            selector_table_body = '.info-content .main table tr'
-            selector_table_header = '.info-content .main table tr'
-            table_header = get_motherboard_support_page_content_table_header(driver, selector_table_header)
-            table_body_rows = driver.find_elements(By.CSS_SELECTOR, selector_table_body)
-            data_rows = collect_data_rows(table_header, table_body_rows)
+            selector_table_body = 'div.main table tr'
+            selector_table_header = 'div.main table tr'
+            table_header = get_motherboard_support_page_content_table_header_bs_soup(html_content, selector_table_header)
+            table_body_rows = get_motherboard_support_page_content_table_rows_bs_soup(html_content, selector_table_body)
+            data_rows = collect_data_rows_bs_soup(table_header, table_body_rows, 'th')
             motherboard_supports += make_motherboard_support_from_data_rows_pre(data_rows, menu_element_text, motherboard_overview)
         elif "memory" in menu_element_text.lower():
             execute_script_str = "document.querySelectorAll('.model-content ul.info-nav li')[" + str(menu_tab_index) + "].click()"
@@ -136,11 +136,13 @@ def parse_motherboard_support_page(motherboard_overview):
             if html_content is None:
                 print("content is None")
                 continue
-            selector_table_body = '.info-content .main table tr'
-            selector_table_header = '.info-content .main table tr'
-            table_header = get_motherboard_support_page_content_table_header(driver, selector_table_header)
-            table_body_rows = driver.find_elements(By.CSS_SELECTOR, selector_table_body)
-            data_rows = collect_data_rows(table_header, table_body_rows)
+            selector_table_body = 'table.memory-support-table tbody tr'
+            selector_table_header = 'table.memory-support-table thead tr'
+            table_header = get_motherboard_support_page_content_table_header_bs_soup(html_content, selector_table_header)
+            table_body_rows = get_motherboard_support_page_content_table_rows_bs_soup(html_content, selector_table_body)
+            data_rows = collect_data_rows_bs_soup(table_header, table_body_rows, 'td')
+            print("data_rows: ", data_rows)
+            exit(0)
             motherboard_supports += make_motherboard_support_from_data_rows_pre(data_rows, menu_element_text, motherboard_overview)
         elif "storage" in menu_element_text.lower():
             execute_script_str = "document.querySelectorAll('.model-content ul.info-nav li')[" + str(menu_tab_index) + "].click()"
@@ -153,20 +155,12 @@ def parse_motherboard_support_page(motherboard_overview):
             if html_content is None:
                 print("content is None")
                 continue
-            selector_table_body = '.info-content .main table tr'
-            selector_table_header = '.info-content .main table tr'
-            table_header = get_motherboard_support_page_content_table_header(driver, selector_table_header)
+            selector_table_body = 'table.storage-support-table-body tbody tr'
+            selector_table_header = 'table.storage-support-table-body thead tr'
+            table_header = get_motherboard_support_page_content_table_header_bs_soup(html_content, selector_table_header)
             table_body_rows = driver.find_elements(By.CSS_SELECTOR, selector_table_body)
             data_rows = collect_data_rows(table_header, table_body_rows)
             motherboard_supports += make_motherboard_support_from_data_rows_pre(data_rows, menu_element_text, motherboard_overview)
-
-
-
-
-
-            print("product_id: ", product_id)
-            exit(0)
-
         menu_tab_index += 1
         # retrieve the content of the tab and check if it contains "cpu" or "Memory"
         # if "compatibility" in menu_element_text.lower():
@@ -272,12 +266,45 @@ def parse_motherboard_support_page_subpage_with_badges(driver, badges_elements):
         for data_row in data_rows:
             data_row["notice"] = badge_element_text
     return data_rows
+def get_motherboard_support_page_content_table_rows_bs_soup(html_content, selector_table_body):
+    soup = BeautifulSoup(html_content, 'html.parser')
+    table_rows = soup.select(selector_table_body)
+    return table_rows
+
+def get_motherboard_support_page_content_table_header_bs_soup(html_content, selector_table_header):
+    soup = BeautifulSoup(html_content, 'html.parser')
+    table_rows = soup.select(selector_table_header)
+    column_max_len = 0
+    for table_row in table_rows:
+        table_columns = table_row.select('th')
+        if len(table_columns) > column_max_len:
+            column_max_len = len(table_columns)
+
+    if column_max_len == 0:
+        return []
+    
+    has_colspan = False
+    for table_row in table_rows:
+        table_columns = table_row.select('th')
+        if len(table_columns) == column_max_len:
+            table_header = []
+            for table_column in table_columns:
+                if table_column.has_attr('colspan') and int(table_column['colspan']) > 1:
+                    has_colspan = True
+                # clean the text and trim it
+                header_text = table_column.text.replace("\n", " ")
+                header_text = header_text.strip()
+                table_header.append(header_text)
+            return table_header
+        
+    return []
 
 def get_motherboard_support_page_content_table_header(driver, selector_table_header):
     table_rows = driver.find_elements(By.CSS_SELECTOR, selector_table_header)
     column_max_len = 0
     for table_row in table_rows:
         table_columns = table_row.find_elements(By.CSS_SELECTOR, 'th')
+        print("table_columns: ", table_columns)
         if len(table_columns) > column_max_len:
             column_max_len = len(table_columns)
 
@@ -286,6 +313,7 @@ def get_motherboard_support_page_content_table_header(driver, selector_table_hea
     
     for table_row in table_rows:
         table_columns = table_row.find_elements(By.CSS_SELECTOR, 'th')
+        print("table_columns: ", table_columns)
         if len(table_columns) == column_max_len:
             table_header = []
             for table_column in table_columns:
@@ -296,6 +324,25 @@ def get_motherboard_support_page_content_table_header(driver, selector_table_hea
             return table_header
         
     return []
+
+def collect_data_rows_bs_soup(table_header, table_body_rows, cell_selector='th'):
+    table_header_len = len(table_header)
+    data_rows = []
+    for table_body_row in table_body_rows:
+        data_cells = {}
+        table_body_columns = table_body_row.select(cell_selector)
+        if cell_selector == 'td':
+            print("table_header_len: ", table_header_len, " len(table_body_columns): ", len(table_body_columns))
+            exit(0)
+        if table_header_len != len(table_body_columns):
+            continue
+        for i in range(len(table_body_columns)):
+            data_cells[table_header[i]] = table_body_columns[i].text.replace("\n", " ").strip()
+        if cell_selector == 'td':
+            print("data_cells: ", data_cells)
+            exit(0)
+        data_rows.append(data_cells)
+    return data_rows
 
 def collect_data_rows(table_header, table_body_rows):
     table_header_len = len(table_header)
