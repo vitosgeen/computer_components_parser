@@ -136,13 +136,9 @@ def parse_motherboard_support_page(motherboard_overview):
             if html_content is None:
                 print("content is None")
                 continue
-            selector_table_body = 'table.memory-support-table tbody tr'
-            selector_table_header = 'table.memory-support-table thead tr'
-            table_header = get_motherboard_support_page_content_table_header_bs_soup(html_content, selector_table_header)
-            table_body_rows = get_motherboard_support_page_content_table_rows_bs_soup(html_content, selector_table_body)
-            data_rows = collect_data_rows_bs_soup(table_header, table_body_rows, 'td')
-            print("data_rows: ", data_rows)
-            exit(0)
+            
+            selector_table = 'table.memory-support-table'
+            data_rows = get_motherboard_support_page_content_tables_bs_soup_memory(html_content, selector_table)
             motherboard_supports += make_motherboard_support_from_data_rows_pre(data_rows, menu_element_text, motherboard_overview)
         elif "storage" in menu_element_text.lower():
             execute_script_str = "document.querySelectorAll('.model-content ul.info-nav li')[" + str(menu_tab_index) + "].click()"
@@ -298,6 +294,50 @@ def get_motherboard_support_page_content_table_header_bs_soup(html_content, sele
             return table_header
         
     return []
+
+def get_motherboard_support_page_content_tables_bs_soup_memory(html_content, selector_tables):
+    data_rows = []
+    soup = BeautifulSoup(html_content, 'html.parser')
+    tables = soup.select(selector_tables)
+    for table in tables:
+        table_headers = []
+        table_rows_header = table.select('thead tr th')
+        for table_row_header in table_rows_header:
+            colspsan_header = table_row_header.get('colspan')
+            # string to int
+            if colspsan_header is not None:
+                colspsan_header = int(colspsan_header)
+            index_header = table_row_header.get('data-colssort')
+            # index_header to int
+            if index_header is not None:
+                index_header = int(index_header)
+            value_header = table_row_header.text.replace("\n", " ").strip()
+            table_headers.append({ "index": index_header, "value": value_header, "colspan": colspsan_header })
+        # order table_headers by index
+        table_headers = sorted(table_headers, key=lambda k: k['index'])
+        
+        table_headers_new = []
+        table_headers_iter = iter(table_headers)
+        for table_header in table_headers_iter:
+            if table_header["colspan"] is not None and table_header["colspan"] > 1:
+                add_str = table_header["value"]
+                for i in range(table_header["colspan"]):
+                    table_header = next(table_headers_iter)
+                    table_headers_new.append(add_str + " " + table_header["value"])
+            else:
+                table_headers_new.append(table_header["value"])
+                
+        table_rows_body = table.select('tbody tr')
+        for table_row_body in table_rows_body:
+            table_columns = table_row_body.select('td')
+            data_row = {}
+            for i in range(len(table_columns)):
+                data_row[table_headers_new[i]] = table_columns[i].text.replace("\n", " ").strip()
+            data_rows.append(data_row)
+
+    return data_rows
+
+
 
 def get_motherboard_support_page_content_table_header(driver, selector_table_header):
     table_rows = driver.find_elements(By.CSS_SELECTOR, selector_table_header)
