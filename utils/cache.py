@@ -9,6 +9,19 @@ def set_json_cache(key, value):
     elif isinstance(value, MotherboardSupport):
         value = value.to_dict()
     set_cache(key, json.dumps(value))
+def check_cache_size_is_valid(key, min_size=100):
+    size = check_size_cache(key)
+    # if size is 0 or less than 1000 bytes, return False
+    if size <= min_size:
+        return False
+    # if size is more than 1000 bytes, return True
+    return True
+
+def check_size_cache(key):
+    path = make_path_from_key(key)
+    if os.path.exists(path):
+        return os.path.getsize(path)
+    return 0
 
 def get_json_cache(key):
     cache = get_cache(key)

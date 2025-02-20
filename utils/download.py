@@ -155,7 +155,7 @@ def download_file(url, type='get', data_post=None, headers=None, sleep_time=0, v
     hash = hashlib.md5(url.encode()).hexdigest()
     if type == 'post':
         hash = hashlib.md5((url + str(data_post)).encode()).hexdigest()
-    
+    print('hash:', hash + ' url:', url + ' type:', type + ' data_post:', data_post)
     # check if file exists
     if os.path.exists(f'./downloads/{hash}'):
         return read_file(f'./downloads/{hash}')
