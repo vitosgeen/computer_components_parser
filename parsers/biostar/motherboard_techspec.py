@@ -108,15 +108,11 @@ def parse_motherboard_techspec_rows(content, motherboard_overview):
             continue
         if index == 0:
             return parse_motherboard_techspec_rows_1(items, motherboard_overview)
-        # elif index == 1:
-        #     return parse_motherboard_techspec_rows_2(items, motherboard_overview)
-        # elif index == 2:
-        #     return parse_motherboard_techspec_rows_3(items, motherboard_overview)
         
     return motherboard_techspecs
 
 def parse_motherboard_techspec_rows_1(items, motherboard_overview):
-    print("parse_motherboard_techspec_rows_2", motherboard_overview.text)
+    print("parse_motherboard_techspec_rows_1", motherboard_overview.text)
     motherboard_techspecs = []
     for item in items:
         mts = parse_motherboard_techspec_type_row_1(item, motherboard_overview)
@@ -147,42 +143,6 @@ def parse_motherboard_techspec_name(content, motherboard_overview):
         )
         return motherboard_techspec
     
-    return None
-
-def parse_motherboard_techspec_type_image_2(item, motherboard_overview):
-    img = item.select_one('#product img.io')
-    if img:
-        motherboard_techspec = MotherboardTechSpec(
-            id=None,
-            mb_item_id=motherboard_overview.mb_item_id,
-            type=MotherboardTechSpec.TYPE_IMAGE,
-            text=img['src'],
-            updated_at=None
-        )
-        return motherboard_techspec
-    return None
-
-def parse_motherboard_techspec_type_name_2(item, motherboard_overview):
-    names = item.select_one('[class^="ProductSpecSingle__specProductName__"]')
-    if names is None:
-        print("Error: biostar motherboard techspec name not found")
-        return None
-    for name in names:
-        # if name is None or empty or doesn't have text, skip
-        if name is None or name.text == "" or not name.text:
-            continue
-        name = name.text
-        # if name is empty, skip or ""
-        if name == "":
-            continue
-        motherboard_techspec = MotherboardTechSpec(
-            id=None,
-            mb_item_id=motherboard_overview.mb_item_id,
-            type=MotherboardTechSpec.TYPE_MODEL,
-            text=name,
-            updated_at=None
-        )
-        return motherboard_techspec
     return None
 
 def parse_motherboard_techspec_type_row_2(item, motherboard_overview):
@@ -300,67 +260,6 @@ def parse_motherboard_techspec_type_row_2_value(type, mb_item_id, item_elements)
             motherboard_techspecs.append(motherboard_techspec)
             
     return motherboard_techspecs
-
-
-def parse_motherboard_techspec_type_row_3(item, motherboard_overview):
-    h2 = item.select_one('.TechSpec__title')
-    if h2 is None:
-        return None
-    h2 = h2.text
-
-    if "cpu" in h2.lower():
-        value_html = item.select_one('.TechSpec__content')
-        return parse_motherboard_techspec_type_row_2_value(MotherboardTechSpec.TYPE_CPU, motherboard_overview.mb_item_id, value_html)
-    elif "chipset" in h2.lower():
-        value_html = item.select_one('.TechSpec__content')
-        return parse_motherboard_techspec_type_row_2_value(MotherboardTechSpec.TYPE_CHIPSET, motherboard_overview.mb_item_id, value_html)
-    elif "memory" in h2.lower():
-        value_html = item.select_one('.TechSpec__content')
-        return parse_motherboard_techspec_type_row_2_value(MotherboardTechSpec.TYPE_MEMORY, motherboard_overview.mb_item_id, value_html)
-    elif "video" in h2.lower():
-        value_html = item.select_one('.TechSpec__content')
-        return parse_motherboard_techspec_type_row_2_value(MotherboardTechSpec.TYPE_GRAPHICS, motherboard_overview.mb_item_id, value_html)
-    elif "expansion slots" in h2.lower():
-        value_html = item.select_one('.TechSpec__content')
-        return parse_motherboard_techspec_type_row_2_value(MotherboardTechSpec.TYPE_EXPANSION_SLOTS, motherboard_overview.mb_item_id, value_html)
-    elif "storage" in h2.lower():
-        value_html = item.select_one('.TechSpec__content')
-        return parse_motherboard_techspec_type_row_2_value(MotherboardTechSpec.TYPE_STORAGE, motherboard_overview.mb_item_id, value_html)
-    elif "lan" in h2.lower():
-        value_html = item.select_one('.TechSpec__content')
-        return parse_motherboard_techspec_type_row_2_value(MotherboardTechSpec.TYPE_LAN, motherboard_overview.mb_item_id, value_html)
-    elif "usb" in h2.lower():
-        value_html = item.select_one('.TechSpec__content')
-        return parse_motherboard_techspec_type_row_2_value(MotherboardTechSpec.TYPE_USB, motherboard_overview.mb_item_id, value_html)
-    elif "audio" in h2.lower():
-        value_html = item.select_one('.TechSpec__content')
-        return parse_motherboard_techspec_type_row_2_value(MotherboardTechSpec.TYPE_AUDIO, motherboard_overview.mb_item_id, value_html)
-    elif "back panel" in h2.lower():
-        value_html = item.select_one('.TechSpec__content')
-        return parse_motherboard_techspec_type_row_2_value(MotherboardTechSpec.TYPE_BACK_PANEL_PORTS, motherboard_overview.mb_item_id, value_html)
-    elif "internal i/o" in h2.lower():
-        value_html = item.select_one('.TechSpec__content')
-        return parse_motherboard_techspec_type_row_2_value(MotherboardTechSpec.TYPE_INTERNAL_I_O_PORTS, motherboard_overview.mb_item_id, value_html)
-    elif "special features" in h2.lower():
-        value_html = item.select_one('.TechSpec__content')
-        return parse_motherboard_techspec_type_row_2_value(MotherboardTechSpec.TYPE_SPECIAL_FEATURES, motherboard_overview.mb_item_id, value_html)
-    elif "bios" in h2.lower():
-        value = item.select_one('.TechSpec__content')
-        return parse_motherboard_techspec_type_row_2_value(MotherboardTechSpec.TYPE_BIOS, motherboard_overview.mb_item_id, value)
-    elif "manageability" in h2.lower():
-        value = item.select_one('.TechSpec__content')
-        return parse_motherboard_techspec_type_row_2_value(MotherboardTechSpec.TYPE_MANAGEABILITY, motherboard_overview.mb_item_id, value)
-    elif "accessories" in h2.lower():
-        value_html = item.select_one('.TechSpec__content')
-        return parse_motherboard_techspec_type_row_2_value(MotherboardTechSpec.TYPE_ACCESSORIES, motherboard_overview.mb_item_id, value_html)
-    elif "operating system" in h2.lower():
-        value = item.select_one('.TechSpec__content')
-        return parse_motherboard_techspec_type_row_2_value(MotherboardTechSpec.TYPE_OPERATING_SYSTEM, motherboard_overview.mb_item_id, value)
-    elif "form factor" in h2.lower():
-        value = item.select_one('.TechSpec__content')
-        return parse_motherboard_techspec_type_row_2_value(MotherboardTechSpec.TYPE_FORM_FACTOR, motherboard_overview.mb_item_id, value)
-
-
 
 def parse_motherboard_techspec_type_row_1(item, motherboard_overview):
     # first child tr 
