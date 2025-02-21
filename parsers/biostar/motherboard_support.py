@@ -1,9 +1,11 @@
 import json
+import traceback
 import random
 from time import sleep
 from bs4 import BeautifulSoup
 from lxml import html
 from selenium.webdriver.common.by import By
+
 
 from models.manufacturer import Manufacturer
 from models.motherboard_overview import MotherboardOverview
@@ -33,6 +35,10 @@ def start_parser_motherboard_support(mbir, mbor, mbtr, mbsr):
         # if not it_was:
         #     continue
         # remove this line in production
+        if "S_ID=1039" in motherboard_item.link:
+            continue
+        if "S_ID=1017" in motherboard_item.link:
+            continue
         key_motherboard_support = CACHE_PREFIX + str(motherboard_item.id)
         # check if cache exists
         json_cache = utils.cache.get_json_cache(key_motherboard_support)
@@ -45,19 +51,24 @@ def start_parser_motherboard_support(mbir, mbor, mbtr, mbsr):
         if motherboard_overviews is None:
             continue
 
+        motherboard_support_result_item = []
         for motherboard_overview in motherboard_overviews:
             # start parse biostar motherboard techspec page
+            print("start_parser_motherboard_support: ", motherboard_overview.text)
             motherboard_support = start_parser_motherboard_support_page(motherboard_overview)
-            
+            if len(motherboard_support) == 0:
+                print("start_parser_motherboard_support: no support data", motherboard_overview.text)
+                exit(0)
             if motherboard_support is None:
                 continue
             for motherboard_support_row in motherboard_support:
                 motherboard_support_row.mb_item_id = motherboard_item.id
                 motherboard_support_result.append(motherboard_support_row)
+                motherboard_support_result_item.append(motherboard_support_row)
 
-            mbsr.add_motherboards_support(motherboard_support)
-            # set json cache
-            utils.cache.set_json_cache(key_motherboard_support, motherboard_support)
+            # mbsr.add_motherboards_support(motherboard_support)
+        # set json cache
+        utils.cache.set_json_cache(key_motherboard_support, motherboard_support_result_item)
 
     return motherboard_support_result
 
@@ -80,7 +91,9 @@ def start_parser_motherboard_support_page(motherboard_overview):
             if len(mb) > 0:
                 break
         except Exception as e:
+            traceback.print_exception(type(e), e, e.__traceback__)
             print("start_parser_motherboard_support_page: exception", e)
+            exit(0)
             sleep(random.randint(1, 3))
     return mb
 
@@ -88,282 +101,108 @@ def parse_motherboard_support_page(motherboard_overview):
     motherboard_supports = []
     
     link = motherboard_overview.text
-    driver = utils.swebdriver.create_driver_unvisible()
-    driver.get(link)
-    # define response code from driver
-    response_code = driver.execute_script("return document.readyState")
-    if response_code != "complete":
-        print("response_code: ", response_code)
-        driver.quit()
-        return motherboard_supports
-    menu_tab_index = 0
     
-    product_id = driver.find_element(By.CSS_SELECTOR, '#isPid').get_attribute("value")
-    if product_id == "" or product_id is None:
-        driver.quit()
-        return motherboard_supports
-    menu_elements = driver.find_elements(By.CSS_SELECTOR, '.model-content ul.info-nav li')
-    for menu_element in menu_elements:
-        menu_element_text = menu_element.get_attribute("textContent").lower().strip()
-        if menu_element_text.lower() == "":
-            continue
-        print("menu_element text: ", menu_element.get_attribute("textContent"))
-        if "cpu" in menu_element_text.lower():
-            execute_script_str = "document.querySelectorAll('.model-content ul.info-nav li')[" + str(menu_tab_index) + "].click()"
-            print("execute_script_str: ", execute_script_str)
-            driver.execute_script(execute_script_str)
-            sleep(sleep_time_random)
-            menu_tab_index += 1
-            url_cpu = 'https://www.biostar.com/Ajax/SupportFunction/GetCpuList'
-            html_content = utils.download.download_file(url_cpu, type='post', data_post={"Value": product_id, "Type":"Product"})
-            if html_content is None:
-                print("content is None")
-                continue
-            selector_table_body = 'div.main table tr'
-            selector_table_header = 'div.main table tr'
-            table_header = get_motherboard_support_page_content_table_header_bs_soup(html_content, selector_table_header)
-            table_body_rows = get_motherboard_support_page_content_table_rows_bs_soup(html_content, selector_table_body)
-            data_rows = collect_data_rows_bs_soup(table_header, table_body_rows, 'th')
-            motherboard_supports += make_motherboard_support_from_data_rows_pre(data_rows, menu_element_text, motherboard_overview)
-        elif "memory" in menu_element_text.lower():
-            execute_script_str = "document.querySelectorAll('.model-content ul.info-nav li')[" + str(menu_tab_index) + "].click()"
-            print("execute_script_str: ", execute_script_str)
-            driver.execute_script(execute_script_str)
-            sleep(sleep_time_random)
-            menu_tab_index += 1
-            url_memory = 'https://www.biostar.com/Ajax/SupportFunction/GetMemorySupportTable'
-            html_content = utils.download.download_file(url_memory, type='post', data_post={"id": product_id})
-            if html_content is None:
-                print("content is None")
-                continue
-            
-            selector_table = 'table.memory-support-table'
-            data_rows = get_motherboard_support_page_content_tables_bs_soup_memory(html_content, selector_table)
-            motherboard_supports += make_motherboard_support_from_data_rows_pre(data_rows, menu_element_text, motherboard_overview)
-        elif "storage" in menu_element_text.lower():
-            execute_script_str = "document.querySelectorAll('.model-content ul.info-nav li')[" + str(menu_tab_index) + "].click()"
-            print("execute_script_str: ", execute_script_str)
-            driver.execute_script(execute_script_str)
-            sleep(sleep_time_random)
-            menu_tab_index += 1
-            url_memory = 'https://www.biostar.com/Ajax/SupportFunction/GetStorageSupportTable'
-            html_content = utils.download.download_file(url_memory, type='post', data_post={"id": product_id})
-            if html_content is None:
-                print("content is None")
-                continue
-            selector_table_body = 'table.storage-support-table-body tbody tr'
-            selector_table_header = 'table.storage-support-table-body thead tr'
-            table_header = get_motherboard_support_page_content_table_header_bs_soup(html_content, selector_table_header)
-            table_body_rows = driver.find_elements(By.CSS_SELECTOR, selector_table_body)
-            data_rows = collect_data_rows(table_header, table_body_rows)
-            motherboard_supports += make_motherboard_support_from_data_rows_pre(data_rows, menu_element_text, motherboard_overview)
-        menu_tab_index += 1
-        # retrieve the content of the tab and check if it contains "cpu" or "Memory"
-        # if "compatibility" in menu_element_text.lower():
-        #     execute_script_str = "document.querySelector('main#support .tabs button.tab:nth-child(" + str(menu_tab_index + 1) + ")').click()"
-        #     print("execute_script_str: ", execute_script_str)
-        #     driver.execute_script(execute_script_str)
-        #     # menu_element.click()
-        #     sleep(sleep_time_random)
-            
-        #     # get elements sub menu
-        #     sub_menu_elements = driver.find_elements(By.CSS_SELECTOR, '#support .subTabs button')
-        #     tab_index_sub_menu = 0
-        #     sub_menu_element_texts = []
-        #     for sub_menu_element in sub_menu_elements:
-        #         if sub_menu_element.get_attribute("textContent").lower() == "":
-        #             continue
-        #         sub_menu_element_text = sub_menu_element.get_attribute("textContent").lower().strip()
-        #         sub_menu_element_texts.append(sub_menu_element_text)
-        #         # click on sub menu element
-        #         execute_script_str = "document.querySelectorAll('#support .subTabs button')[" + str(tab_index_sub_menu) + "].click()"
-        #         tab_index_sub_menu += 1
-        #         print("execute_script_str: ", execute_script_str)
-        #         driver.execute_script(execute_script_str)
-        #         sleep(sleep_time_random)
-                
-        #         # check if driver has badges buttons "#support .badges button" and avoid errors
-        #         badges_elements = driver.find_elements(By.CSS_SELECTOR, '#support .badges button')
-        #         if badges_elements and len(badges_elements) > 0:
-        #             data_rows = parse_motherboard_support_page_subpage_with_badges(driver, badges_elements)
-        #             motherboard_supports += make_motherboard_support_from_data_rows_pre(data_rows, sub_menu_element_text, motherboard_overview)
-        #         else:
-        #             print("no badges elements")
-        #             data_rows = parse_motherboard_support_page_subpage(driver)
-        #             motherboard_supports += make_motherboard_support_from_data_rows_pre(data_rows, sub_menu_element_text, motherboard_overview)
-        #         print("sub_menu_element_texts: ", sub_menu_element_texts)
-        
-    driver.quit()
-
+    content = utils.download.download_file_by_selenium_unvisible(link)
+    if content is None:
+        return
+    
+    # parse content by 
+    if "mb_cpu" in link:
+        motherboard_supports += parse_motherboard_support_page_content(content, MotherboardSupport.TYPE_CPU, motherboard_overview)
+    if "mb_memory" in link:
+        motherboard_supports += parse_motherboard_support_page_content(content, MotherboardSupport.TYPE_MEMORY, motherboard_overview)
+    if "mb_storage" in link:
+        motherboard_supports += parse_motherboard_support_page_content(content, MotherboardSupport.TYPE_STORAGE, motherboard_overview)
+    if "mb_m2" in link:
+        motherboard_supports += parse_motherboard_support_page_content(content, MotherboardSupport.TYPE_STORAGE, motherboard_overview)
+    
     return motherboard_supports
 
-def parse_motherboard_support_page_subpage(driver):
-    selector_table_header = '.info-content .main table tr'
-    table_header = get_motherboard_support_page_content_table_header(driver, selector_table_header)
+def parse_motherboard_support_page_content(content, type, motherboard_overview):
+    if type == MotherboardSupport.TYPE_CPU:
+        selector_table_header = '.table-container table.table2excel thead tr'
+        selector_table_body = '.table-container table.table2excel tbody tr'
+        headers = get_motherboard_support_page_content_table_header(content, selector_table_header)
+        if len(headers) == 0:
+            return []
+        table_body_rows = get_motherboard_support_page_content_table_body(content, selector_table_body)
+        data_rows = collect_data_rows(headers, table_body_rows)
+        return make_motherboard_support_from_data_rows_pre(data_rows, type, motherboard_overview)
+    elif type == MotherboardSupport.TYPE_MEMORY:
+        selector_table_header = '.table-container table.table2excel'
+        selector_table_body = '.table-container table.table2excel tbody tr'
+        headers = get_motherboard_support_page_content_table_header_memory(content, selector_table_header)
+        if len(headers) == 0:
+            return []
+        table_body_rows = get_motherboard_support_page_content_table_body(content, selector_table_body)
+        data_rows = collect_data_rows(headers, table_body_rows)
+        return make_motherboard_support_from_data_rows_pre(data_rows, type, motherboard_overview)
+    elif type == MotherboardSupport.TYPE_STORAGE:
+        selector_table_header = '.table-container table.table2excel thead tr'
+        selector_table_body = '.table-container table.table2excel tbody tr'
+        headers = get_motherboard_support_page_content_table_header(content, selector_table_header)
+        if len(headers) == 0:
+            return []
+        table_body_rows = get_motherboard_support_page_content_table_body(content, selector_table_body)
+        data_rows = collect_data_rows(headers, table_body_rows)
+        return make_motherboard_support_from_data_rows_pre(data_rows, type, motherboard_overview)
     
-    selector_table_body = '.info-content .main table tr'
-    selector_pagination = '.dataTables_paginate a'
-    pagination_elements = driver.find_elements(By.CSS_SELECTOR, selector_pagination)
-    pagination_elements_len = len(pagination_elements)
-
-    data_rows = []
-    if pagination_elements_len > 0:
-        for key, pagination_element in enumerate(pagination_elements):
-            if key == 0:
-                continue
-            if key == pagination_elements_len - 1:
-                continue
-            execute_script_str = "document.querySelectorAll('" + selector_pagination + "')[" + str(key) + "].click()"
-            print("execute_script_str: ", execute_script_str)
-            driver.execute_script(execute_script_str)
-            sleep(sleep_time_random)
-            table_body_rows = driver.find_elements(By.CSS_SELECTOR, selector_table_body)
-            data_rows = collect_data_rows(table_header, table_body_rows)
-    else:
-        table_body_rows = driver.find_elements(By.CSS_SELECTOR, selector_table_body)
-        data_rows = collect_data_rows(table_header, table_body_rows)
-    return data_rows
-
-def parse_motherboard_support_page_subpage_with_badges(driver, badges_elements):
-    selector_table_header = '.info-content .main table tr'
-    table_header = get_motherboard_support_page_content_table_header(driver, selector_table_header)
-
-    data_rows = []
-    badge_element_index = 0
-    badge_element_selector = '.main > div:nth-child(1)'
-    for badge_element in badges_elements:
-        badge_element_text = badge_element.get_attribute("textContent").lower().strip()
-        print("badge_element_text: ", badge_element_text)
-        execute_script_str = "document.querySelectorAll('.main > div:nth-child(1)')[" + str(badge_element_index) + "].click()"
-        print("execute_script_str: ", execute_script_str)
-        driver.execute_script(execute_script_str)
-        badge_element_index += 1
-        sleep(sleep_time_random)
-        selector_table_body = '.info-content .main table tr'
-        selector_pagination = '.dataTables_paginate a'
-        pagination_elements = driver.find_elements(By.CSS_SELECTOR, selector_pagination)
-        pagination_elements_len = len(pagination_elements)
-
-        if pagination_elements_len > 0:
-            for key, pagination_element in enumerate(pagination_elements):
-                if key == 0:
-                    continue
-                if key == pagination_elements_len - 1:
-                    continue
-                execute_script_str = "document.querySelectorAll('" + selector_pagination + "')[" + str(key) + "].click()"
-                print("execute_script_str: ", execute_script_str)
-                driver.execute_script(execute_script_str)
-                sleep(sleep_time_random)
-                table_body_rows = driver.find_elements(By.CSS_SELECTOR, selector_table_body)
-                data_rows += collect_data_rows(table_header, table_body_rows)
+def get_motherboard_support_page_content_table_header_memory(content, selector_table_header):
+    soup = BeautifulSoup(content, 'html.parser')
+    table_header = soup.select(selector_table_header)
+    if len(table_header) == 0:
+        return []
+    table_header = table_header[0].select('thead > tr > th')
+    headers = []
+    for header in table_header:
+        if header is None:
+            continue
+        colspan = header.get('colspan')
+        if colspan is not None:
+            colspan = int(colspan)
         else:
-            table_body_rows = driver.find_elements(By.CSS_SELECTOR, selector_table_body)
-            data_rows += collect_data_rows(table_header, table_body_rows)
-        for data_row in data_rows:
-            data_row["notice"] = badge_element_text
-    return data_rows
-def get_motherboard_support_page_content_table_rows_bs_soup(html_content, selector_table_body):
-    soup = BeautifulSoup(html_content, 'html.parser')
-    table_rows = soup.select(selector_table_body)
-    return table_rows
+            colspan = 1
+            
+        if colspan > 1:
+            #  Find nested headers
+            name_nested_header = header.select_one('table.inner-table tr:nth-of-type(1) th').text.replace("\n", " ").strip().lower()
+            name_nested2_headers = header.select('table.inner-table tr:nth-of-type(2) td')
+            for name_nested2_header in name_nested2_headers:
+                header_text = name_nested_header + " " + name_nested2_header.text.replace("\n", " ").strip().lower()
+                headers.append(header_text)
+        else:
+            header_text = header.text.replace("\n", " ").strip().lower()
+            headers.append(header_text)
 
-def get_motherboard_support_page_content_table_header_bs_soup(html_content, selector_table_header):
-    soup = BeautifulSoup(html_content, 'html.parser')
-    table_rows = soup.select(selector_table_header)
-    column_max_len = 0
-    for table_row in table_rows:
-        table_columns = table_row.select('th')
-        if len(table_columns) > column_max_len:
-            column_max_len = len(table_columns)
+    return headers
+            
 
-    if column_max_len == 0:
+def get_motherboard_support_page_content_table_header(content, selector_table_header):
+    soup = BeautifulSoup(content, 'html.parser')
+    table_header = soup.select(selector_table_header)
+    if len(table_header) == 0:
         return []
-    
-    has_colspan = False
-    for table_row in table_rows:
-        table_columns = table_row.select('th')
-        if len(table_columns) == column_max_len:
-            table_header = []
-            for table_column in table_columns:
-                if table_column.has_attr('colspan') and int(table_column['colspan']) > 1:
-                    has_colspan = True
-                # clean the text and trim it
-                header_text = table_column.text.replace("\n", " ")
-                header_text = header_text.strip()
-                table_header.append(header_text)
-            return table_header
-        
-    return []
+    table_header = table_header[0].select('th')
+    headers = []
+    for header in table_header:
+        if header is None:
+            continue
+        header_text = header.text.replace("\n", " ").strip().lower()
+        headers.append(header_text)
+    return headers
 
-def get_motherboard_support_page_content_tables_bs_soup_memory(html_content, selector_tables):
+def get_motherboard_support_page_content_table_body(content, selector_table_body):
+    soup = BeautifulSoup(content, 'html.parser')
+    table_body = soup.select(selector_table_body)
     data_rows = []
-    soup = BeautifulSoup(html_content, 'html.parser')
-    tables = soup.select(selector_tables)
-    for table in tables:
-        table_headers = []
-        table_rows_header = table.select('thead tr th')
-        for table_row_header in table_rows_header:
-            colspsan_header = table_row_header.get('colspan')
-            # string to int
-            if colspsan_header is not None:
-                colspsan_header = int(colspsan_header)
-            index_header = table_row_header.get('data-colssort')
-            # index_header to int
-            if index_header is not None:
-                index_header = int(index_header)
-            value_header = table_row_header.text.replace("\n", " ").strip()
-            table_headers.append({ "index": index_header, "value": value_header, "colspan": colspsan_header })
-        # order table_headers by index
-        table_headers = sorted(table_headers, key=lambda k: k['index'])
-        
-        table_headers_new = []
-        table_headers_iter = iter(table_headers)
-        for table_header in table_headers_iter:
-            if table_header["colspan"] is not None and table_header["colspan"] > 1:
-                add_str = table_header["value"]
-                for i in range(table_header["colspan"]):
-                    table_header = next(table_headers_iter)
-                    table_headers_new.append(add_str + " " + table_header["value"])
-            else:
-                table_headers_new.append(table_header["value"])
-                
-        table_rows_body = table.select('tbody tr')
-        for table_row_body in table_rows_body:
-            table_columns = table_row_body.select('td')
-            data_row = {}
-            for i in range(len(table_columns)):
-                data_row[table_headers_new[i]] = table_columns[i].text.replace("\n", " ").strip()
-            data_rows.append(data_row)
-
+    for table_body_row in table_body:
+        data_cells = {}
+        table_body_columns = table_body_row.select('td')
+        for i in range(len(table_body_columns)):
+            text_cell = table_body_columns[i].text.replace("\n", " ").strip()
+            data_cells[i] = text_cell
+        data_rows.append(data_cells)
     return data_rows
-
-
-
-def get_motherboard_support_page_content_table_header(driver, selector_table_header):
-    table_rows = driver.find_elements(By.CSS_SELECTOR, selector_table_header)
-    column_max_len = 0
-    for table_row in table_rows:
-        table_columns = table_row.find_elements(By.CSS_SELECTOR, 'th')
-        print("table_columns: ", table_columns)
-        if len(table_columns) > column_max_len:
-            column_max_len = len(table_columns)
-
-    if column_max_len == 0:
-        return []
-    
-    for table_row in table_rows:
-        table_columns = table_row.find_elements(By.CSS_SELECTOR, 'th')
-        print("table_columns: ", table_columns)
-        if len(table_columns) == column_max_len:
-            table_header = []
-            for table_column in table_columns:
-                # clean the text and trim it
-                header_text = table_column.text.replace("\n", " ")
-                header_text = header_text.strip()
-                table_header.append(header_text)
-            return table_header
-        
-    return []
 
 def collect_data_rows_bs_soup(table_header, table_body_rows, cell_selector='th'):
     table_header_len = len(table_header)
@@ -375,6 +214,7 @@ def collect_data_rows_bs_soup(table_header, table_body_rows, cell_selector='th')
             print("table_header_len: ", table_header_len, " len(table_body_columns): ", len(table_body_columns))
             exit(0)
         if table_header_len != len(table_body_columns):
+            print("table_header_len: ", table_header_len, " len(table_body_columns): ", len(table_body_columns))
             continue
         for i in range(len(table_body_columns)):
             data_cells[table_header[i]] = table_body_columns[i].text.replace("\n", " ").strip()
@@ -389,11 +229,12 @@ def collect_data_rows(table_header, table_body_rows):
     data_rows = []
     for table_body_row in table_body_rows:
         data_cells = {}
-        table_body_columns = table_body_row.find_elements(By.CSS_SELECTOR, 'th')
-        if table_header_len != len(table_body_columns):
+        if table_header_len != len(table_body_row):
             continue
-        for i in range(len(table_body_columns)):
-            data_cells[table_header[i]] = table_body_columns[i].text
+        for i in range(len(table_body_row)):
+            if table_body_row[i] is None:
+                continue
+            data_cells[table_header[i]] = table_body_row[i]
 
         data_rows.append(data_cells)
     return data_rows
