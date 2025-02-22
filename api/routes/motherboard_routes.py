@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, Response, jsonify, request
 
 # routes for the motherboard controllers
 class MotherboardRoutes:
@@ -10,6 +10,13 @@ class MotherboardRoutes:
     def init_routes(self):
         @self.app.route('/motherboards', methods=['GET'])
         def get_all_motherboards():
-            motherboards = self.motherboard_controller.get_all_motherboards()
-            return jsonify(motherboards)
+            # get query parameters
+            limit = request.args.get('limit')
+            offset = request.args.get('offset')
+            if limit is None:
+                limit = 1
+            if offset is None:
+                offset = 0
+                
+            return jsonify(self.motherboard_controller.get_all_motherboards(limit, offset))
             
