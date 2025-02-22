@@ -47,3 +47,23 @@ class MotherboardItemRepository:
             motherboards.append(MotherboardItem(row_dict['id'], row_dict['orig_id'], row_dict['title'], row_dict['price'], row_dict['link'], row_dict['description'], row_dict['category'], row_dict['manufacturer']))
 
         return motherboards
+    
+    def getAllMotherboards(self, limit, offset):
+        rows = self.db.cursor.execute('SELECT * FROM motherboard_items LIMIT ? OFFSET ?', (limit, offset))
+        result = rows.fetchall()
+        motherboards = []
+        for row in result:
+            row_dict = dict(row)
+            motherboards.append(MotherboardItem(row_dict['id'], row_dict['orig_id'], row_dict['title'], row_dict['price'], row_dict['link'], row_dict['description'], row_dict['category'], row_dict['manufacturer']))
+
+        return motherboards
+    
+    def getAllMotherboardsList(self, limit, offset):
+        rows = self.db.cursor.execute('SELECT * FROM motherboard_items LIMIT ? OFFSET ?', (limit, offset))
+        result = rows.fetchall()
+        motherboards: list[MotherboardItem] = []
+        for row in result:
+            row_dict = dict(row)
+            motherboard_item = MotherboardItem(row_dict['id'], row_dict['orig_id'], row_dict['title'], row_dict['price'], row_dict['link'], row_dict['description'], row_dict['category'], row_dict['manufacturer'])
+            motherboards.append(motherboard_item.to_dict())
+        return motherboards

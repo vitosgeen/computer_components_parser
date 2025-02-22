@@ -62,3 +62,13 @@ class MotherboardTechSpecRepository:
             techspecs.append(MotherboardTechSpec(row_dict['id'], row_dict['mb_item_id'], row_dict['type'], row_dict['text'], row_dict['updated_at']))
 
         return techspecs
+    
+    def get_all_motherboards_techspec_by_ids(self, ids):
+        placeholders = ','.join('?' for _ in ids)
+        rows = self.db.cursor.execute('SELECT * FROM motherboard_techspecs WHERE mb_item_id IN (%s)' % placeholders, ids)
+        result = rows.fetchall()
+        techspecs = []
+        for row in result:
+            row_dict = dict(row)
+            techspecs.append(MotherboardTechSpec(row_dict['id'], row_dict['mb_item_id'], row_dict['type'], row_dict['text'], row_dict['updated_at']))
+        return techspecs

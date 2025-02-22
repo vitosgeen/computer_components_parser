@@ -80,3 +80,13 @@ class MotherboardSupportRepository:
             motherboard_support_loaded = self.getSupportsByMbItemIdTypeData(motherboard_support.mb_item_id, motherboard_support.type, motherboard_support.data)
             if motherboard_support_loaded is None:
                 self.add(motherboard_support)
+
+    def get_all_motherboards_support_by_ids(self, ids):
+        placeholders = ','.join('?' for _ in ids)
+        rows = self.db.cursor.execute('SELECT * FROM motherboard_supports WHERE mb_item_id IN (%s)' % placeholders, ids)
+        result = rows.fetchall()
+        supports = []
+        for row in result:
+            row_dict = dict(row)
+            supports.append(MotherboardSupport(row_dict['id'], row_dict['mb_item_id'], row_dict['type'], row_dict['data'], row_dict['updated_at']))
+        return supports

@@ -72,3 +72,24 @@ class MotherboardOverviewRepository:
             overviews.append(MotherboardOverview(row_dict['id'], row_dict['mb_item_id'], row_dict['type'], row_dict['text'], row_dict['updated_at']))
 
         return overviews
+    
+    def get_all_motherboards_overview(self):
+        rows = self.db.cursor.execute('SELECT * FROM motherboard_overviews')
+        result = rows.fetchall()
+        overviews = []
+        for row in result:
+            row_dict = dict(row)
+            overviews.append(MotherboardOverview(row_dict['id'], row_dict['mb_item_id'], row_dict['type'], row_dict['text'], row_dict['updated_at']))
+
+        return overviews
+    
+    def get_all_motherboards_overview_by_ids(self, ids):
+        placeholders = ','.join('?' for _ in ids)
+        rows = self.db.cursor.execute('SELECT * FROM motherboard_overviews WHERE mb_item_id IN ({})'.format(placeholders), ids)
+        result = rows.fetchall()
+        overviews = []
+        for row in result:
+            row_dict = dict(row)
+            overviews.append(MotherboardOverview(row_dict['id'], row_dict['mb_item_id'], row_dict['type'], row_dict['text'], row_dict['updated_at']))
+
+        return overviews
