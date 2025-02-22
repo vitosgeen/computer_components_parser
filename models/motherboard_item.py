@@ -21,3 +21,15 @@ class MotherboardItem:
             category=data["category"],
             manufacturer=data["manufacturer"]
         )
+    
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "orig_id": self.orig_id,
+            "title": self.title,
+            "price": self.price,
+            "link": self.link,
+            "description": self.description,
+            "category": self.category,
+            "manufacturer": self.manufacturer
+        }
