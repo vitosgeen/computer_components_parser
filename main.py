@@ -23,25 +23,6 @@ import api.routes
 
 def api_mode(db):
     pass
-    # init repositories
-    # motherboard item repository 
-    # mbir = repository.motherboard_item_repository.MotherboardItemRepository(db)
-    # # motherboard overview repository
-    # mbor = repository.motherboard_overview_repository.MotherboardOverviewRepository(db)
-    # # motherboard techspec repository
-    # mbtr = repository.motherboard_techspec_repository.MotherboardTechSpecRepository(db)
-    # # motherboard support repository
-    # mbsr = repository.motherboard_support_repository.MotherboardSupportRepository(db)
-
-    # # init services
-    # motherboard_service = api.services.motherboard_service.MotherboardService(mbir, mbor, mbtr, mbsr)
-
-    # app = Flask(__name__)
-
-    # # init routes
-    # router = api.routes.motherboard_routes.MotherboardRoutes(app, motherboard_service)
-
-    # router.app.run(debug=True)
 
 def cli_mode(db):
     # get manufature from args
