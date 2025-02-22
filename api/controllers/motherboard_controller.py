@@ -4,8 +4,9 @@ class MotherboardController:
         self.motherboard_service = motherboard_service
 
     # get all motherboards
-    def get_all_motherboards(self):
-        return self.motherboard_service.get_all_motherboards()
+    def get_all_motherboards(self, limit=10, offset=0):
+        motherboards = self.motherboard_service.get_all_motherboards(limit, offset)
+        return motherboards
 
     # get all motherboards overview
     def get_all_motherboards_overview(self):
