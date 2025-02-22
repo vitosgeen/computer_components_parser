@@ -16,6 +16,7 @@ import parsers.asus.motherboard_techspec
 import parsers.biostar
 import parsers.biostar.motherboard_list
 import parsers.biostar.motherboard_page
+import parsers.biostar.motherboard_support
 import parsers.biostar.motherboard_techspec
 import parsers.colorful
 import parsers.colorful.motherboard_list
@@ -66,14 +67,14 @@ def start_parser(manufacture, db):
         add_motherboards_support(motherboards_support, mbsr)
 
     elif manufacture.lower() == models.manufacturer.Manufacturer().MSI.lower():
-        # motherboards = parsers.msi.motherboard_list.start_parser_moterboard_list()
-        # add_motherboards(motherboards, mbir)
+        motherboards = parsers.msi.motherboard_list.start_parser_moterboard_list()
+        add_motherboards(motherboards, mbir)
         # # start msi parser for motherboards overview pages
-        # motherboards_overviews = parsers.msi.motherboard_page.start_parser_motherboard_pages(mbir)   
-        # add_motherboards_overviews(motherboards_overviews, mbor)
+        motherboards_overviews = parsers.msi.motherboard_page.start_parser_motherboard_pages(mbir)   
+        add_motherboards_overviews(motherboards_overviews, mbor)
         # start msi parser for motherboards techspec pages
-        # motherboards_techspecs = parsers.msi.motherboard_techspec.start_parser_motherboard_techspec(mbir, mbor)
-        # add_motherboards_techspecs(motherboards_techspecs, mbtr)
+        motherboards_techspecs = parsers.msi.motherboard_techspec.start_parser_motherboard_techspec(mbir, mbor)
+        add_motherboards_techspecs(motherboards_techspecs, mbtr)
         # start msi parser for motherboards support pages
         motherboards_support = parsers.msi.motherboard_support.start_parser_motherboard_support(mbir, mbor, mbtr, mbsr)
         add_motherboards_support(motherboards_support, mbsr)
@@ -105,13 +106,18 @@ def start_parser(manufacture, db):
         add_motherboards_support(motherboards_support, mbsr)
 
     elif manufacture.lower() == models.manufacturer.Manufacturer().BIOSTAR.lower():
-        # motherboards = parsers.biostar.motherboard_list.start_parser_moterboard_list()
-        # add_motherboards(motherboards, mbir)
-        # start msi parser for motherboards overview pages
+        motherboards = parsers.biostar.motherboard_list.start_parser_moterboard_list()
+        add_motherboards(motherboards, mbir)
+        # start BIOSTAR parser for motherboards overview pages
         motherboards_overviews = parsers.biostar.motherboard_page.start_parser_motherboard_pages(mbir)  
+        # start BIOSTAR parser for motherboards techspec pages
         add_motherboards_overviews(motherboards_overviews, mbor)
         motherboards_techspecs = parsers.biostar.motherboard_techspec.start_parser_motherboard_techspec(mbir, mbor)
         add_motherboards_techspecs(motherboards_techspecs, mbtr)
+        # start BIOSTAR parser for motherboards support pages
+        motherboards_support = parsers.biostar.motherboard_support.start_parser_motherboard_support(mbir, mbor, mbtr, mbsr)
+        add_motherboards_support(motherboards_support, mbsr)
+        
     elif manufacture.lower() == models.manufacturer.Manufacturer().COLORFUL.lower():
         motherboards = parsers.colorful.motherboard_list.start_parser_moterboard_list()
         add_motherboards(motherboards, mbir)
