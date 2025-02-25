@@ -1,10 +1,12 @@
 import sys
 import os
 from flask import Flask
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 
 # Add the parent directory to the system path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
+from config import Config
 # import databases
 import databases.sqlite3
 import repository
@@ -19,6 +21,8 @@ import services.motherboard_service
 import routes
 
 if __name__ == '__main__':
+
+    config = Config()
 
     # init sqlite3
     db = databases.sqlite3.SQLite3()
@@ -38,7 +42,13 @@ if __name__ == '__main__':
 
     app = Flask(__name__)
 
+
+    # Secret key for JWT
+    app.config["JWT_SECRET_KEY"] = config.JWT_SECRET
+    app.config["JWT_ACCESS_TOKEN_EXPIRES"] = 60 * 60 * 24 * 7  # 1 week
+    jwt = JWTManager(app)
+
     # init routes
-    router = routes.motherboard_routes.MotherboardRoutes(app, motherboard_service)
+    router = routes.motherboard_routes.MotherboardRoutes(app, motherboard_service, config)
 
     router.app.run(debug=True)
