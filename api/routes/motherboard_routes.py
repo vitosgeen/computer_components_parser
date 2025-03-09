@@ -30,6 +30,12 @@ class MotherboardRoutes:
 
             return jsonify(mb)
         
+        # redirect 404 to the login page
+        @self.app.errorhandler(404)
+        def page_not_found(e):
+            # 301 redirect Moved Permanently
+            return self.render_template('login.html'), 301
+        
         
     def login_route(self):
         @self.app.route('/login', methods=['GET'])

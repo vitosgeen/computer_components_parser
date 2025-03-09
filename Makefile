@@ -20,6 +20,9 @@ run-all:
 	python main.py -m colorful
 	python main.py -m galax
 
+run-api:
+	python api/main.py
+
 # script to clear Python cache
 clear-pycache:
 	@echo "Clearing pycache"
